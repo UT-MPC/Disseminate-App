@@ -1,0 +1,35 @@
+package publication;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import mobile.MobileHost;
+import common.Chunk;
+import common.Utility;
+
+public class ReceiverChunks implements Runnable {
+
+	// Thread for receiving publications
+	
+	public ReceiverChunks() {
+	}
+	
+	public void run() {
+		byte [] recvBuf = new byte[Utility.BUF_SIZE];
+		try {
+			while (!Thread.interrupted()) {
+				DatagramPacket recvPack = new DatagramPacket(recvBuf, recvBuf.length);
+				MobileHost.chunkSocket.receive(recvPack);
+				MobileHost.chunkQueue.put(recvPack);
+				//recvChunk = (Chunk) Utility.deserialize
+			}
+		} catch (IOException e) {
+			System.out.println("Chunk Socket disconnected.");
+		} catch (InterruptedException e) {
+			System.out.println("ReceiverChunks Thread was interrupted.");
+		}
+	}
+	
+}

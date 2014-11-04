@@ -1,0 +1,34 @@
+package subscription;
+
+import java.io.IOException;
+import java.net.Socket;
+
+import common.Subscription;
+import mobile.MobileHost;
+import network.TcpReceiver;
+
+public class RecvSubscription implements Runnable {
+
+	Socket subSocket;
+	
+	public RecvSubscription(Socket subSocket) {
+		this.subSocket = subSocket;
+	}
+	
+	@Override
+	public void run() {
+		TcpReceiver tr = null; 
+		try {
+			tr = new TcpReceiver(subSocket);
+			MobileHost.subscriptionQueue.put((Subscription) tr.receive());
+			tr.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+}

@@ -1,0 +1,155 @@
+package mobile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Timer;
+
+import publication.ProcessChunks;
+import publication.ReceiverChunks;
+import subscription.ListenerThread;
+import subscription.SendSubscription;
+import advertise.ProcessBeacons;
+import advertise.ReceiverBeacons;
+import advertise.SendBeacon;
+import ut.beacondisseminationapp.common.Beacon;
+import ut.beacondisseminationapp.common.Chunk;
+import ut.beacondisseminationapp.common.Item;
+//import ut.beacondisseminationapp.common.SourceTask;
+import ut.beacondisseminationapp.common.Subscription;
+import ut.beacondisseminationapp.common.Utility;
+//import ut.beacondisseminationapp.common.ReceiveWrapper;
+
+public class HostMain {
+	
+	public static Thread subListenerThread = new Thread(new ListenerThread());
+	public static Thread procBeaconThread = new Thread(new ProcessBeacons());
+	public static Thread recvBeaconThread = new Thread(new ReceiverBeacons());
+	public static Thread procChunkThread = new Thread(new ProcessChunks());
+	public static Thread recvChunkThread = new Thread(new ReceiverChunks());
+	
+	public static Timer sourceTimer = null;
+	public static Timer beaconTimer = null;
+	
+	public static void stopThreads() {
+		//subListenerThread.interrupt();
+		//procBeaconThread.interrupt();
+		//recvBeaconThread.interrupt();
+		procChunkThread.interrupt();
+		recvChunkThread.interrupt();
+	}
+	
+	public static void main(String args[]) {
+		
+		Utility.init(); // initialize constants
+		
+		Runtime.getRuntime().addShutdownHook ( new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				MobileHost.cleanup();
+				System.out.println("gracefulFinish() shutdown");
+				MobileHost.gracefulFinish();
+			}
+		}));
+		
+		try {
+			//TODO: get args consisting of chunk lengths for each item
+			
+			if (args.length == 0) {
+				System.out.println("Specify chunk lengths");
+				System.exit(0);
+			}
+			
+			MobileHost.init(args, args.length);
+			
+			MobileHost dummy = new MobileHost(args, args.length);
+			
+			sourceTimer = new Timer();
+			beaconTimer = new Timer();
+			MobileHost.beaconSocket = new DatagramSocket(Utility.BEACON_PORT);
+			MobileHost.chunkSocket = new DatagramSocket(Utility.CHUNK_PORT);
+			
+			// start in the first 0 - 3 minutes
+			// Thread.sleep(Utility.rng.nextInt() % (3*60*1000));
+			Thread.sleep(200);
+			Thread.sleep(MobileHost.delayStart);
+			
+			//Item first = MobileHost.items.get(MobileHost.virtualChunk.itemId);
+			MobileHost.startTime = System.currentTimeMillis();
+			System.out.println("Start time: "+MobileHost.startTime);
+			//first.startTime = MobileHost.startTime;
+			//MobileHost.items.put(MobileHost.virtualChunk.itemId, first);
+			
+			subListenerThread.start();	
+			procBeaconThread.start();
+			recvBeaconThread.start();
+			procChunkThread.start();
+			recvChunkThread.start();
+			
+			// make first subscription
+			//System.out.println("In main prior to class init");
+			(new Timer()).schedule(new SendSubscription(), 0);
+
+			// start beacon
+			beaconTimer.scheduleAtFixedRate(new SendBeacon(), 0, 750);
+			
+			// start virtual source
+			sourceTimer.scheduleAtFixedRate(new SourceTask(), MobileHost.sourceRate(MobileHost.virtualChunk.size), MobileHost.sourceRate(MobileHost.virtualChunk.size));
+	
+			try {
+				// send out publications
+				while(true) {
+					Subscription nextSub = MobileHost.subscriptionQueue.take();
+					
+					// prune unnecessary subs
+					boolean shouldPrune = true;
+					for (Beacon b: MobileHost.beacons.values()) {
+						if (!b.bvMap.get(nextSub.itemId).testBit(nextSub.chunkId)) { // check if someone in range still needs this
+							shouldPrune = false;
+							break;
+						}
+					}
+					if (shouldPrune) {
+						System.out.println("Pruning subscription, everyone in range already has this chunk...");
+						continue;
+					}
+					Item curI = MobileHost.items.get(nextSub.itemId);
+					if (curI == null) {
+						System.out.println("Bad subscription, don't have this item...");
+						continue;
+					}
+					
+					// construct and send out chunk corresponding to this
+					Chunk chunkToPub = new Chunk(nextSub.itemId, nextSub.chunkId, curI.chunkSize, nextSub.requester);
+					byte [] chunkBuf = Utility.serialize(chunkToPub, Utility.BUF_SIZE);
+					DatagramPacket sendPack = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.CHUNK_PORT);
+					MobileHost.chunkSocket.send(sendPack);
+					MobileHost.pubBytesSent+=chunkBuf.length;
+					
+					//System.out.println("Publication Send Rate: "+MobileHost.getRate(MobileHost.pubBytesSent, System.currentTimeMillis()));
+				}
+			} finally {
+				MobileHost.cleanup();
+				System.out.println("gracefulFinish() main");
+				MobileHost.gracefulFinish();
+			}
+		} catch (IOException e) {
+			System.err.println("Error initializing Socket");
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+}

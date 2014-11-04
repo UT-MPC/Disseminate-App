@@ -1,0 +1,31 @@
+package subscription;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import common.Utility;
+import mobile.HostMain;
+
+public class ListenerThread implements Runnable {
+
+	public void run() {
+		ServerSocket ss;
+		try {
+			ss = new ServerSocket(Utility.SUBSCRIPTION_PORT);
+			ss.setReuseAddress(true);
+			try {
+				while(!Thread.interrupted()) {
+					Socket s = ss.accept();
+					new Thread(new RecvSubscription(s)).start();
+				}
+			} finally {
+				ss.close();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+}

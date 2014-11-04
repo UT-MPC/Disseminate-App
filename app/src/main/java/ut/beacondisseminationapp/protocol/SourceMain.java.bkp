@@ -1,0 +1,123 @@
+package source;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import common.Chunk;
+import common.Message;
+import common.Subscription;
+import common.Utility;
+import mobile.MobileHost;
+import mobile.MobileMain;
+import network.TcpSender;
+
+public class SourceMain {
+	
+	private static final int LPORT = 9000;
+	
+	public static String results = "";
+	
+	public static void main(String args[]) {
+		
+		final int spaces = Integer.parseInt(args[0]);
+		final int rateSend = Integer.parseInt(args[1]);
+		final String config = args[2];
+		
+		Runtime.getRuntime().addShutdownHook ( new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				System.out.println("Dumping results");
+				MobileMain.dumpDistance(results, "Src", spaces, rateSend, config);
+			}
+		}));
+		
+		Utility.init();
+		
+		InetSocketAddress destAddr = null;
+		InetAddress addrOnly = null;
+		InetAddress broadcastAddr = null;
+		try {
+			broadcastAddr = InetAddress.getByName("10.11.12.255"); //TODO: make this an arg
+			
+			if (args.length==0) {
+				System.out.println("No ip specified, using local host");
+				destAddr = new InetSocketAddress(InetAddress.getLocalHost(),LPORT);
+			} else {
+				destAddr = new InetSocketAddress(args[0],LPORT);
+				addrOnly = InetAddress.getByName(args[0]);
+			}
+		} catch (UnknownHostException e) {
+			System.out.println("Error assigning address from args");
+			e.printStackTrace();
+		}
+		try {
+			
+			// UDP Unicast using fixed length datagrams
+			MulticastSocket ds = new MulticastSocket(9050);
+			//ds.setBroadcast(true);
+			
+			// unicast only
+			//DatagramPacket sendPack = new DatagramPacket(chunkBuf, chunkBuf.length, destAddr);
+			// broadcast only
+
+			System.out.println("Trying broadcast addr back to 255");
+			
+			int numToSend = 1000;
+			System.out.println("Sending "+numToSend+" chunks!");
+			
+			long bytesSent = 0;
+			int cnt = 0;
+			
+			//Thread.sleep(5000);
+			
+			long startTime = System.currentTimeMillis();
+			System.out.println("Start time: "+startTime);
+			
+			for (int i=0; i<numToSend; ++i) {
+				String s = "test"+i;
+				Chunk temp = null; 
+				//if (Utility.rng.nextBoolean()) {
+					//System.out.println("Preparing chunk...");
+					temp = new Chunk(s, 0, 1024*8, "dest");
+				//} else {
+				//	System.out.println("Preparing subscription...");
+				//	temp = new Subscription("DummyIP", s, 0);
+				//}
+				byte [] chunkBuf = Utility.serialize(temp, 1024*1000);
+				DatagramPacket sendPack = new DatagramPacket(chunkBuf, chunkBuf.length, broadcastAddr, LPORT);
+				ds.send(sendPack);
+				bytesSent+=sendPack.getLength();
+				cnt++;
+				String tmp = "Sending packet #"+cnt+" of length: "+sendPack.getLength();
+				results +=  tmp+"\n";
+				System.out.println(tmp);
+			}
+			long endTime = System.currentTimeMillis();
+			results += "End time: "+endTime+"\n";
+			System.out.println("End time: "+endTime);
+			long delta = endTime - startTime;
+			double rate = ((double)bytesSent) / (((double)delta)/1000);
+			
+			results += "Sent: "+bytesSent+" Bytes"+"\n";
+			System.out.println("Sent: "+bytesSent+" Bytes");
+			results += "Rate: "+(rate/1024)+" KBytes/sec"+"\n";
+			System.out.println("Rate: "+(rate/1024)+" KBytes/sec");
+
+			ds.close();
+			
+		} catch (IOException e) {
+			System.err.println("Error initializing ServerSocket");
+			e.printStackTrace();
+		}
+	}
+}

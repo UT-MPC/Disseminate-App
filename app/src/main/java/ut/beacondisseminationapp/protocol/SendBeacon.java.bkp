@@ -1,0 +1,30 @@
+package advertise;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.util.TimerTask;
+
+import common.Utility;
+import mobile.MobileHost;
+
+public class SendBeacon extends TimerTask {
+	
+	@Override
+	public void run() {
+		// Send beacon
+		byte [] beaconBuf = Utility.serialize(MobileHost.myBeacon, Utility.BEACON_SIZE);
+		DatagramPacket sendPack = new DatagramPacket(beaconBuf, beaconBuf.length, Utility.broadcastAddr, Utility.BEACON_PORT);
+		try {
+			MobileHost.beaconSocket.send(sendPack);
+			System.out.println("Sending beacon!");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		MobileHost.beaconBytesSent+=beaconBuf.length;
+		
+		//System.out.println("Publication Send Rate: "+Driver.getRate(Driver.beaconBytesSent, System.currentTimeMillis()));
+	}
+	
+}
+

@@ -159,7 +159,7 @@ public class MadBroadcastActivity extends Activity {
                    InetAddress broadcastAddr = getBroadcastAddress();
                    socket.setBroadcast(true);
                    DatagramPacket packet;
-                   packet = new DatagramPacket(buf, buf.length, group, 8888);
+                   packet = new DatagramPacket(buf, buf.length, getBroadcastAddress(), 8888);
                    socket.send(packet);
                    Thread.sleep(1000);
                    socket.close();

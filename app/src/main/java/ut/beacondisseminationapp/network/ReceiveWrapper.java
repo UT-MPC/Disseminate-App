@@ -5,16 +5,16 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
-public class TcpReceiver extends ObjectInputStream {
+public class ReceiveWrapper extends ObjectInputStream {
 
     InputStream is;
 
-    public TcpReceiver(InputStream is) throws IOException {
+    public ReceiveWrapper(InputStream is) throws IOException {
         super(is);
         this.is = is;
     }
 
-    public TcpReceiver(Socket s) throws IOException {
+    public ReceiveWrapper(Socket s) throws IOException {
         this(s.getInputStream());
     }
 

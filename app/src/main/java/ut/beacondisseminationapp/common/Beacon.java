@@ -3,7 +3,7 @@ package ut.beacondisseminationapp.common;
 import java.io.Serializable;
 import java.util.HashMap;
 
-public class Beacon implements Serializable {
+public class Beacon extends Packet {
 
 	public String hostIp;
 	public int signalStrength = 0;

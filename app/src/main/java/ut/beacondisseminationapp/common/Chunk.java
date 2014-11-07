@@ -2,7 +2,7 @@ package ut.beacondisseminationapp.common;
 
 import java.io.Serializable;
 
-public class Chunk implements Serializable {
+public class Chunk extends Packet {
 	
 	public String itemId;
 	public int chunkId;

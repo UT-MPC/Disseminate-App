@@ -5,16 +5,16 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class TcpSender extends ObjectOutputStream {
+public class SendWrapper extends ObjectOutputStream {
 
     OutputStream os;
 
-    public TcpSender(OutputStream os) throws IOException {
+    public SendWrapper(OutputStream os) throws IOException {
         super(os);
         this.os = os;
     }
 
-    public TcpSender(Socket s) throws IOException {
+    public SendWrapper(Socket s) throws IOException {
         this(s.getOutputStream());
     }
 

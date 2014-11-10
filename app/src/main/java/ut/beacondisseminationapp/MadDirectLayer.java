@@ -28,7 +28,7 @@ import java.util.Enumeration;
  * Created by Venkat on 11/4/14.
  */
 
-public class MadDirectLayer<T> extends BroadcastReceiver {
+public class MadDirectLayer extends BroadcastReceiver {
 
     private static WifiP2pManager mManager;
     private static Channel mChannel;

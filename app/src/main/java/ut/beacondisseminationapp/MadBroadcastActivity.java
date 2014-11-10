@@ -4,14 +4,9 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -19,40 +14,33 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 
-import ut.beacondisseminationapp.common.Packet;
 
-
-public class MadBroadcastActivity extends Activity {
-    WifiP2pManager mManager;
+public class MadBroadcastActivity extends Activity {   //the main activity class for a MadApp Application
+    WifiP2pManager mManager;   //the required infrastructure for the madapp app
     Channel mChannel;
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
     WifiManager nManager;
+    Container txrxfifo = new Container();
     public static int data_length;
     public static String dataString = "sendthis";
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {  //function called on app init
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mad_broadcast);
 
-        //Initalize the items needed.
+        //Initalize the items needed. Copy, paste this into every madapp application
+        //required by WiFi direct conventions
+
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
-        mReceiver = new MadDirectLayer(mManager, mChannel, this);
+        mReceiver = new MadDirectLayer(mManager, mChannel, this, txrxfifo);
 
         //Assign the handlers for the intents
         mIntentFilter = new IntentFilter();
@@ -61,11 +49,11 @@ public class MadBroadcastActivity extends Activity {
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
-        nManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+
 
         data_length = dataString.length();
-        Thread tRecv = new Thread(new PacketReceiver());
-        tRecv.start();
+        //Thread tRecv = new Thread(new PacketReceiver());
+        //tRecv.start();
 
     }
 
@@ -127,18 +115,30 @@ public class MadBroadcastActivity extends Activity {
         return null;
     }
 
-    private String getDottedDecimalIP(byte[] ipAddr) {
-        //convert to dotted decimal notation:
-        String ipAddrStr = "";
-        for (int i=0; i<ipAddr.length; i++) {
-            if (i > 0) {
-                ipAddrStr += ".";
-            }
-            ipAddrStr += ipAddr[i]&0xFF;
-        }
-        return ipAddrStr;
+
+
+
+    //Context thisCont = getApplicationContext();
+    public void broadcastClickHand(View v){
+        //Toast.makeText(getApplicationContext(), "Handler executed.", Toast.LENGTH_LONG).show();
+        Log.d("MadApp", "Handler executed.");
+
     }
 
+   public void refreshHand(View v){
+       mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+           @Override
+           public void onSuccess() {
+               //Start the next intent.
+           }
+           @Override
+           public void onFailure(int reasonCode) {
+               //Something went wrong.
+               Toast.makeText(getApplicationContext(), "Discovery failed for some reason.", Toast.LENGTH_SHORT).show();
+           }
+       });
+   }
+    /*
     //Broadcaster tools
     InetAddress getBroadcastAddress() throws IOException {
         Log.d("MadAppASync","Getting broadcast address");
@@ -167,27 +167,6 @@ public class MadBroadcastActivity extends Activity {
         InetAddress addr = InetAddress.getByName("192.168.49.255");
         return addr;
     }
-    //Context thisCont = getApplicationContext();
-    public void broadcastClickHand(View v){
-        //Toast.makeText(getApplicationContext(), "Handler executed.", Toast.LENGTH_LONG).show();
-        Log.d("MadApp", "Handler executed.");
-        Thread tBroad = new Thread(new Broadcaster());
-        tBroad.start();
-    }
-
-   public void refreshHand(View v){
-       mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-           @Override
-           public void onSuccess() {
-               //Start the next intent.
-           }
-           @Override
-           public void onFailure(int reasonCode) {
-               //Something went wrong.
-               Toast.makeText(getApplicationContext(), "Discovery failed for some reason.", Toast.LENGTH_SHORT).show();
-           }
-       });
-   }
    private class Broadcaster implements Runnable {
 
        @Override
@@ -338,5 +317,5 @@ public class MadBroadcastActivity extends Activity {
         }
         return null;
     }
-
+    */
 }

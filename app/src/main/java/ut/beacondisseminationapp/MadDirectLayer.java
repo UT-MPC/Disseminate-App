@@ -3,6 +3,8 @@ package ut.beacondisseminationapp;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
@@ -11,36 +13,57 @@ import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 
 /**
  * Created by Venkat on 11/4/14.
  */
 
-public class MadDirectLayer extends BroadcastReceiver {
+public class MadDirectLayer<T> extends BroadcastReceiver {
 
-    private WifiP2pManager mManager;
-    private Channel mChannel;
-    private MadBroadcastActivity mActivity;
-
+    private static WifiP2pManager mManager;
+    private static Channel mChannel;
+    private static MadBroadcastActivity mActivity;
+    private static WifiManager CommonManager;   //Common non-p2p version of the wireless manager
     PeerListListener myPeerListListener;
-    private ArrayList<WifiP2pDevice> peersList = new ArrayList<WifiP2pDevice>();
-    private WifiP2pDevice groupOwner;
+
+    private static ArrayList<WifiP2pDevice> peersList = new ArrayList<WifiP2pDevice>();
+    private static WifiP2pDevice groupOwner;
+
+    private static Container mCont;
     public MadDirectLayer(WifiP2pManager manager, Channel channel,
-                                       MadBroadcastActivity activity) {
+                                       MadBroadcastActivity activity, Container items) {
         super();
         this.mManager = manager;
         this.mChannel = channel;
         this.mActivity = activity;
+        this.CommonManager = (WifiManager) mActivity.getSystemService(Context.WIFI_SERVICE);
+        mCont = items;
+
+        Broadcast_Init();
+        Receiver_Init(); //initalize and start the recv thread
+
+
+
     }
-    public Context getAppContext(){
+
+
+    public static Context getAppContext(){
         return mActivity;
     }
-    public WifiP2pDevice getGroupOwner(){
+    public static WifiP2pDevice getGroupOwner(){
         return groupOwner;
     }
-    public ArrayList<WifiP2pDevice> getPeers(){
+    public static ArrayList<WifiP2pDevice> getPeers(){
         return peersList;
     }
     @Override
@@ -96,5 +119,175 @@ public class MadDirectLayer extends BroadcastReceiver {
                 // Respond to this device's wifi state changing
             }
         }
+    }
+
+    public static void Broadcast_Init(){   //Initalization function for the broadcaster, call this before broadcasting anything
+        Thread broadProcess = new Thread(new BroadcastThread());
+        broadProcess.start();
+
+    }
+
+
+
+
+    public static void Receiver_Init(){   //Initialize this if you want the thread to give you items
+        Thread processRecv = new Thread(new RecvProcess());
+        processRecv.start();
+        Log.d("Message", "Recv Process Started.");
+    }
+
+
+    private static class RecvProcess implements Runnable {   //constant retrieval process
+        //String data;
+        private byte[] recvItem;
+
+        DatagramSocket serverSocket;
+
+        public RecvProcess(){
+            //WifiInfo connectionInfo = CommonManager.getConnectionInfo();
+            //String WiFiSSIDString = connectionInfo.getSSID();
+
+            //grab the multicast lock
+            WifiManager.MulticastLock lock = CommonManager.createMulticastLock("dk.aboaya.pingpong");
+            lock.acquire();
+
+            //setup the socket
+            int socketPort = 15270;
+            while(true) {
+                try {
+                    serverSocket = new DatagramSocket(socketPort);
+                    break;
+                } catch (SocketException e) {
+                   //socketPort++       How are we supposed to handle socket errors?
+                }
+            }
+        }
+
+        @Override
+        public void run (){
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                while(true) {
+                    byte[] data = new byte[serverSocket.getReceiveBufferSize()];
+
+                    DatagramPacket packet = new DatagramPacket(data, serverSocket.getReceiveBufferSize());
+                    serverSocket.receive(packet);
+                    recvItem = packet.getData();
+                    if (recvItem != null) {
+                        mCont.putIntoRXSystem(recvItem);
+                        Log.v("Receive", (new String(recvItem)).toString());
+                        Log.d("Rx Buffer Size Updated", "New Size: " + mCont.getRxSizeUserSystem());
+                    }
+
+                }
+            }
+            catch(Exception e){
+                Log.d("Error.", "Exception with the receive thread.");
+            }
+
+            //return null;
+        }
+    }
+
+
+
+    //Broadcaster stuff
+    private static class BroadcastThread implements Runnable {
+        byte[] output;
+        DatagramSocket outSocket;
+
+        public BroadcastThread(){
+            int socketPort = 15267;
+            while(true) {
+                try {
+                    outSocket = new DatagramSocket(socketPort);
+                    outSocket.setReuseAddress(true);
+                    outSocket.setBroadcast(true);
+                    break;
+                }
+                catch(SocketException e){
+                    //socketPort++??
+                }
+            }
+
+
+        }
+        @Override
+        public void run() {
+            try {
+                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+                output = mCont.getNextBroadcastSystem();
+                while(true) {   //constantly runs
+                    while (!mCont.isTXEmptySystem()) { //only runs while there are items to send out
+                        DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
+                        outSocket.send(packet);
+                        Log.d("Async", "Packet sent");
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.d("Error", "Error initalizing the push.");
+            }
+        }
+
+    }
+
+
+
+    //UTILS USED BY THE MADAPP LAYER
+    private static InetAddress getBroadcastAddress() throws IOException {
+        Log.d("MadAppASync","Getting broadcast address");
+        WifiManager wifi = (WifiManager) mActivity.getSystemService(Context.WIFI_SERVICE);
+        String localIp = getDottedDecimalIP(getLocalIPAddress());
+        Log.d("LocalIp", localIp);
+
+        DhcpInfo dhcp = wifi.getDhcpInfo();
+
+        if (dhcp == null) {
+            Log.d("MadAppASync", "DHCP is null!");
+        }
+
+        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
+        byte[] quads = new byte[4];
+        for (int k = 0; k < 4; k++)
+            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+        Log.d("MadAppASync",InetAddress.getByAddress(quads).toString());
+        InetAddress addr = InetAddress.getByName("192.168.49.255");
+        return addr;
+    }
+
+    private static String getDottedDecimalIP(byte[] ipAddr) {
+        //convert to dotted decimal notation:
+        String ipAddrStr = "";
+        for (int i=0; i<ipAddr.length; i++) {
+            if (i > 0) {
+                ipAddrStr += ".";
+            }
+            ipAddrStr += ipAddr[i]&0xFF;
+        }
+        return ipAddrStr;
+    }
+    private static byte[] getLocalIPAddress() {
+        try {
+            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
+                NetworkInterface intf = en.nextElement();
+                for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+                    InetAddress inetAddress = enumIpAddr.nextElement();
+                    if (!inetAddress.isLoopbackAddress()) {
+                        if (inetAddress instanceof Inet4Address) { // fix for Galaxy Nexus. IPv4 is easy to use :-)
+                            return inetAddress.getAddress();
+                        }
+                        //return inetAddress.getHostAddress().toString(); // Galaxy Nexus returns IPv6
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        } catch (NullPointerException ex) {
+            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+        }
+        return null;
     }
 }

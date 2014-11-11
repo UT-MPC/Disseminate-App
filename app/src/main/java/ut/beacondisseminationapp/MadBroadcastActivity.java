@@ -48,13 +48,9 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-
-
-
        // data_length = dataString.length();
         //Thread tRecv = new Thread(new PacketReceiver());
         //tRecv.start();
-
     }
 
 
@@ -85,12 +81,14 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
     protected void onResume() {
         super.onResume();
         registerReceiver(mReceiver, mIntentFilter);
+        ((MadDirectLayer)mReceiver).Stay_Awake();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(mReceiver);
+        ((MadDirectLayer)mReceiver).Go_Sleep();
     }
 
     private byte[] getLocalIPAddress() {

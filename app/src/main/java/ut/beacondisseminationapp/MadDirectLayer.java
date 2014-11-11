@@ -10,6 +10,7 @@ import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+
 
 
 /**
@@ -40,6 +42,11 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static WifiP2pDevice groupOwner;
 
     private static Container mCont;
+
+    private static PowerManager powerManager;
+
+    private static PowerManager.WakeLock powerGrabber;
+
     public MadDirectLayer(WifiP2pManager manager, Channel channel,
                                        MadBroadcastActivity activity, Container items) {
         super();
@@ -121,6 +128,18 @@ public class MadDirectLayer extends BroadcastReceiver {
         }
     }
 
+    public static void Stay_Awake(){
+        powerManager = (PowerManager) mActivity.getSystemService(Context.POWER_SERVICE);
+        powerGrabber = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MyWakelockTag");
+
+        powerGrabber.acquire();
+
+    }
+
+    public static void Go_Sleep(){
+        powerGrabber.release();
+    }
     public static void Broadcast_Init(){   //Initalization function for the broadcaster, call this before broadcasting anything
         Thread broadProcess = new Thread(new BroadcastThread());
         broadProcess.start();
@@ -229,8 +248,6 @@ public class MadDirectLayer extends BroadcastReceiver {
         }
 
     }
-
-
 
     //UTILS USED BY THE MADAPP LAYER
     private static InetAddress getBroadcastAddress() throws IOException {

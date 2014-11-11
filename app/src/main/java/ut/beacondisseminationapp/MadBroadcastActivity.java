@@ -29,7 +29,7 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
     WifiManager nManager;
     Container txrxfifo = new Container();
     public static int data_length;
-    public static String dataString = "sendthis";
+    //public static String dataString = "sendthis";
     @Override
     protected void onCreate(Bundle savedInstanceState) {  //function called on app init
         super.onCreate(savedInstanceState);
@@ -51,7 +51,7 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
 
 
 
-        data_length = dataString.length();
+       // data_length = dataString.length();
         //Thread tRecv = new Thread(new PacketReceiver());
         //tRecv.start();
 

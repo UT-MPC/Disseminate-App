@@ -124,11 +124,7 @@ public class MadDirectLayer extends BroadcastReceiver {
     public static void Broadcast_Init(){   //Initalization function for the broadcaster, call this before broadcasting anything
         Thread broadProcess = new Thread(new BroadcastThread());
         broadProcess.start();
-
     }
-
-
-
 
     public static void Receiver_Init(){   //Initialize this if you want the thread to give you items
         Thread processRecv = new Thread(new RecvProcess());
@@ -269,6 +265,7 @@ public class MadDirectLayer extends BroadcastReceiver {
         }
         return ipAddrStr;
     }
+
     private static byte[] getLocalIPAddress() {
         try {
             for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {

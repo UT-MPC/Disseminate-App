@@ -120,6 +120,7 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
     public void broadcastClickHand(View v){
         //Toast.makeText(getApplicationContext(), "Handler executed.", Toast.LENGTH_LONG).show();
         Log.d("MadApp", "Handler executed.");
+        txrxfifo.broadcastUser((new String("Test String")).getBytes());
 
     }
 

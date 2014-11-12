@@ -141,6 +141,7 @@ public class MadDirectLayer extends BroadcastReceiver {
         powerGrabber.release();
     }
     public static void Broadcast_Init(){   //Initalization function for the broadcaster, call this before broadcasting anything
+        Log.d("Process", "Broadcast service initiated.");
         Thread broadProcess = new Thread(new BroadcastThread());
         broadProcess.start();
     }
@@ -158,45 +159,30 @@ public class MadDirectLayer extends BroadcastReceiver {
 
         DatagramSocket serverSocket;
 
-        public RecvProcess(){
-            //WifiInfo connectionInfo = CommonManager.getConnectionInfo();
-            //String WiFiSSIDString = connectionInfo.getSSID();
-
-            //grab the multicast lock
-            WifiManager.MulticastLock lock = CommonManager.createMulticastLock("dk.aboaya.pingpong");
-            lock.acquire();
-
-            //setup the socket
-            int socketPort = 15270;
-            while(true) {
-                try {
-                    serverSocket = new DatagramSocket(socketPort);
-                    break;
-                } catch (SocketException e) {
-                   //socketPort++       How are we supposed to handle socket errors?
-                }
-            }
-        }
-
         @Override
         public void run (){
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
             try {
+                WifiManager.MulticastLock lock = CommonManager.createMulticastLock("dk.aboaya.pingpong");
+                lock.acquire();
+
+                int socketPort = 15270;
+                serverSocket = new DatagramSocket(socketPort);
                 while(true) {
                     byte[] data = new byte[serverSocket.getReceiveBufferSize()];
-
                     DatagramPacket packet = new DatagramPacket(data, serverSocket.getReceiveBufferSize());
                     serverSocket.receive(packet);
                     recvItem = packet.getData();
                     if (recvItem != null) {
                         mCont.putIntoRXSystem(recvItem);
-                        Log.v("Receive", (new String(recvItem)).toString());
+                        Log.d("Receive", (new String(recvItem)).toString());
                         Log.d("Rx Buffer Size Updated", "New Size: " + mCont.getRxSizeUserSystem());
                     }
 
                 }
             }
             catch(Exception e){
+                //serverSocket.close();
                 Log.d("Error.", "Exception with the receive thread.");
             }
 
@@ -210,31 +196,19 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static class BroadcastThread implements Runnable {
         byte[] output;
         DatagramSocket outSocket;
-
-        public BroadcastThread(){
-            int socketPort = 15267;
-            while(true) {
-                try {
-                    outSocket = new DatagramSocket(socketPort);
-                    outSocket.setReuseAddress(true);
-                    outSocket.setBroadcast(true);
-                    break;
-                }
-                catch(SocketException e){
-                    //socketPort++??
-                }
-            }
-
-
-        }
         @Override
         public void run() {
             try {
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-
-                output = mCont.getNextBroadcastSystem();
+                int socketPort = 15268;
+                outSocket = new DatagramSocket(socketPort);
+                outSocket.setReuseAddress(true);
+                outSocket.setBroadcast(true);
+                Log.d("SocketMessage", "Socket Initalized.");
+               // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
                     while (!mCont.isTXEmptySystem()) { //only runs while there are items to send out
+                        output = mCont.getNextBroadcastSystem();
                         DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
                         outSocket.send(packet);
                         Log.d("Async", "Packet sent");
@@ -243,6 +217,7 @@ public class MadDirectLayer extends BroadcastReceiver {
 
             } catch (Exception e) {
                 e.printStackTrace();
+                //outSocket.close();
                 Log.d("Error", "Error initalizing the push.");
             }
         }

@@ -21,6 +21,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -46,7 +47,7 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static PowerManager powerManager;
 
     private static PowerManager.WakeLock powerGrabber;
-
+    private static int socketPort = 15270;
     public MadDirectLayer(WifiP2pManager manager, Channel channel,
                                        MadBroadcastActivity activity, Container items) {
         super();
@@ -166,7 +167,7 @@ public class MadDirectLayer extends BroadcastReceiver {
                 WifiManager.MulticastLock lock = CommonManager.createMulticastLock("dk.aboaya.pingpong");
                 lock.acquire();
 
-                int socketPort = 15270;
+
                 serverSocket = new DatagramSocket(socketPort);
                 while(true) {
                     byte[] data = new byte[serverSocket.getReceiveBufferSize()];
@@ -174,9 +175,10 @@ public class MadDirectLayer extends BroadcastReceiver {
                     serverSocket.receive(packet);
                     recvItem = packet.getData();
                     if (recvItem != null) {
-                        mCont.putIntoRXSystem(recvItem);
+                        mCont.update_rx(packet);
+                        recvItem = packet.getData();
                         Log.d("Receive", (new String(recvItem)).toString());
-                        Log.d("Rx Buffer Size Updated", "New Size: " + mCont.getRxSizeUserSystem());
+                        Log.d("Rx Buffer Size Updated", "New Size: " + mCont.packet_count());
                     }
 
                 }
@@ -207,9 +209,11 @@ public class MadDirectLayer extends BroadcastReceiver {
                 Log.d("SocketMessage", "Socket Initalized.");
                // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
-                    while (!mCont.isTXEmptySystem()) { //only runs while there are items to send out
-                        output = mCont.getNextBroadcastSystem();
-                        DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
+                    while (!mCont.broadcast_isempty()) { //only runs while there are items to send out
+                        //output = mCont.next_txitem();
+                        //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
+                        DatagramPacket packet = mCont.next_txitem();
+                        output = packet.getData();
                         outSocket.send(packet);
                         Log.d("Async", "Packet sent");
                     }
@@ -223,7 +227,24 @@ public class MadDirectLayer extends BroadcastReceiver {
         }
 
     }
+    public static int getPacketPort(){
+        return socketPort;
+    }
+    public static InetAddress getBroadcastIP(){
+        try {
+            return getBroadcastAddress();
+        } catch (IOException e) {
+            e.printStackTrace();
 
+        }
+        InetAddress addr = null;
+        try {
+            addr = InetAddress.getByName("192.168.49.255");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return addr;
+    }
     //UTILS USED BY THE MADAPP LAYER
     private static InetAddress getBroadcastAddress() throws IOException {
         Log.d("MadAppASync","Getting broadcast address");

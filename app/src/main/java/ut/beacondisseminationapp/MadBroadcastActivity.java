@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import java.net.DatagramPacket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -120,7 +121,8 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
     public void broadcastClickHand(View v){
         //Toast.makeText(getApplicationContext(), "Handler executed.", Toast.LENGTH_LONG).show();
         Log.d("MadApp", "Handler executed.");
-        txrxfifo.broadcastUser((new String("Test String")).getBytes());
+        String testSt = new String("test string");
+        txrxfifo.broadcast_packet(new DatagramPacket(testSt.getBytes(), testSt.getBytes().length, ((MadDirectLayer)mReceiver).getBroadcastIP(), ((MadDirectLayer)mReceiver).getPacketPort()));
 
     }
 

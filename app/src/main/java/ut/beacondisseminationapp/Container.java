@@ -1,5 +1,6 @@
 package ut.beacondisseminationapp;
 
+import java.net.DatagramPacket;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -7,26 +8,47 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class Container {
 
-    ArrayBlockingQueue<byte[]> RxFIFO = new ArrayBlockingQueue<byte[]>(1000);  //contains upto 1000 items. store this in the stack
-    ArrayBlockingQueue<byte[]> TxFIFO = new ArrayBlockingQueue<byte[]>(1000);  //contains upto 1000 items. store this in the stack
+    ArrayBlockingQueue<DatagramPacket> RxFIFO = new ArrayBlockingQueue<DatagramPacket>(1000);  //contains upto 1000 items. store this in the stack
+    ArrayBlockingQueue<DatagramPacket> TxFIFO = new ArrayBlockingQueue<DatagramPacket>(1000);  //contains upto 1000 items. store this in the stack
 
     public Container(){
 
     }
 
-    //TRANSMIT FUNCTIONS
-    public void broadcastUser(byte[] bytesOut){
-        TxFIFO.add(bytesOut);
-    }  //
-    public boolean isTXEmptySystem(){
-        return TxFIFO.isEmpty();
+
+    //USER FUNCTIONS
+
+    //Gets the next packet that was received by the layer
+    public DatagramPacket receive_packet(){
+        while(true) {
+            try {
+                return RxFIFO.take();
+            } catch (InterruptedException e) {
+                continue;
+            }
+        }
     }
 
-    //RX. FUNCTIONS
-    public void putIntoRXSystem(byte[] bytesIn){   //USER SHOULD NOT CALL THIS FUNCTION. CALLED BY THE LAYER.
+    //Puts the packet into line to be broadcasted
+    public void broadcast_packet(DatagramPacket bytesOut){
+        TxFIFO.add(bytesOut);
+    }  //user function that broadcasts packet
+
+    public boolean receive_done(){    //function to call to check if there's anymore items in the receive queue
+        return RxFIFO.isEmpty();
+    }
+    public int packet_count() {return RxFIFO.size();}
+
+
+
+    //SYSTEM FUNCTIONS, USERS DO NOT CALL THESE!!
+    public boolean broadcast_isempty(){
+        return TxFIFO.isEmpty();
+    }
+    public void update_rx(DatagramPacket bytesIn){   //USER SHOULD NOT CALL THIS FUNCTION. CALLED BY THE LAYER.
         RxFIFO.add(bytesIn);
     }
-    public byte[] getNextBroadcastSystem(){
+    public DatagramPacket next_txitem(){
         while(true) {
             try {
                 return TxFIFO.take();
@@ -36,8 +58,8 @@ public class Container {
         }
     }
 
-    public boolean isRXDoneUser(){    //function to call to check if there's anymore items in the receive queue
-        return RxFIFO.isEmpty();
-    }
-    public int getRxSizeUserSystem() {return RxFIFO.size();}
+
+
+
+
 }

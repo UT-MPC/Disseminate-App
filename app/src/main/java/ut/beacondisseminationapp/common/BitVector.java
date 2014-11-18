@@ -26,4 +26,16 @@ public class BitVector implements Serializable {
 	public boolean testDiversity(BitVector otherBv) {
 		return (((~data) & (otherBv.data)) != 0);
 	}
+
+    public BitVector oppositeIntersection(BitVector neighborBv) {
+        return new BitVector((data) & (~neighborBv.data));
+    }
+
+    public boolean isCompleted() {
+        if (data == -1L) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

@@ -19,7 +19,7 @@ public class Utility {
 	public final static int NUM_CHUNKS = 64;
 	
 	public final static int BUF_SIZE = 1024*101;
-	//public final static int CHK_SIZE = 1024*100;
+	public final static int CHK_SIZE = 1024*32;
 	
 	public final static int BEACON_SIZE = 1024*2;
 	//public final static int SUB_SIZE = 1024*1;
@@ -30,7 +30,10 @@ public class Utility {
 	public static final int CHUNK_PORT = 9000;
 	public static final int BEACON_PORT = 9001;
 	public static final int SUBSCRIPTION_PORT = 9002;
-	
+
+    public static final int RECEIVER_PORT = 15270;
+    public static final int BROADCASTER_PORT = 15268;
+
 	public final static Random rng = new Random(System.currentTimeMillis());
 	
 	public static void init() {
@@ -41,7 +44,7 @@ public class Utility {
 		macToIp.put("b8:e8:56:39:49:ac", "10.11.12.200");
 		
 		try {
-			broadcastAddr = InetAddress.getByName("10.11.12.255");
+			broadcastAddr = InetAddress.getByName("192.168.49.255");
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

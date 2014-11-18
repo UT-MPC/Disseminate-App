@@ -19,7 +19,11 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+
+import ut.beacondisseminationapp.common.Utility;
+import ut.beacondisseminationapp.protocol.Protocol;
 
 
 public class MadBroadcastActivity extends Activity {   //the main activity class for a MadApp Application
@@ -52,6 +56,14 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
        // data_length = dataString.length();
         //Thread tRecv = new Thread(new PacketReceiver());
         //tRecv.start();
+
+
+        // Protocol specific initialization
+        Utility.init();
+        ArrayList<String> desiredItems = new ArrayList<String>();
+        desiredItems.add("Item0");
+        Protocol.initialize(desiredItems, txrxfifo, this);
+
     }
 
 

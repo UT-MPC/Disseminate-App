@@ -1,5 +1,6 @@
 package ut.beacondisseminationapp;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
+import ut.beacondisseminationapp.common.Utility;
 
 
 /**
@@ -35,7 +37,7 @@ public class MadDirectLayer extends BroadcastReceiver {
 
     private static WifiP2pManager mManager;
     private static Channel mChannel;
-    private static MadBroadcastActivity mActivity;
+    private static Activity mActivity;
     private static WifiManager CommonManager;   //Common non-p2p version of the wireless manager
     PeerListListener myPeerListListener;
 
@@ -47,9 +49,9 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static PowerManager powerManager;
 
     private static PowerManager.WakeLock powerGrabber;
-    private static int socketPort = 15270;
+    //private static int socketPort = 15270;
     public MadDirectLayer(WifiP2pManager manager, Channel channel,
-                                       MadBroadcastActivity activity, Container items) {
+                                       Activity activity, Container items) {
         super();
         this.mManager = manager;
         this.mChannel = channel;
@@ -168,7 +170,7 @@ public class MadDirectLayer extends BroadcastReceiver {
                 lock.acquire();
 
 
-                serverSocket = new DatagramSocket(socketPort);
+                serverSocket = new DatagramSocket(Utility.RECEIVER_PORT);
                 while(true) {
                     byte[] data = new byte[serverSocket.getReceiveBufferSize()];
                     DatagramPacket packet = new DatagramPacket(data, serverSocket.getReceiveBufferSize());
@@ -177,14 +179,15 @@ public class MadDirectLayer extends BroadcastReceiver {
                     if (recvItem != null) {
                         mCont.update_rx(packet);
                         recvItem = packet.getData();
-                        Log.d("Receive", (new String(recvItem)).toString());
-                        Log.d("Rx Buffer Size Updated", "New Size: " + mCont.packet_count());
+                        //Log.d("Receive", (new String(recvItem)).toString());
+                        //Log.d("Rx Buffer Size Updated", "New Size: " + mCont.packet_count());
                     }
 
                 }
             }
             catch(Exception e){
                 //serverSocket.close();
+                e.printStackTrace();
                 Log.d("Error.", "Exception with the receive thread.");
             }
 
@@ -202,21 +205,18 @@ public class MadDirectLayer extends BroadcastReceiver {
         public void run() {
             try {
                 android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-                int socketPort = 15268;
-                outSocket = new DatagramSocket(socketPort);
+                outSocket = new DatagramSocket(Utility.BROADCASTER_PORT);
                 outSocket.setReuseAddress(true);
                 outSocket.setBroadcast(true);
                 Log.d("SocketMessage", "Socket Initalized.");
                // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
-                    while (!mCont.broadcast_isempty()) { //only runs while there are items to send out
-                        //output = mCont.next_txitem();
-                        //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
-                        DatagramPacket packet = mCont.next_txitem();
-                        output = packet.getData();
-                        outSocket.send(packet);
-                        Log.d("Async", "Packet sent");
-                    }
+                    //output = mCont.next_txitem();
+                    //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
+                    DatagramPacket packet = mCont.next_txitem();
+                    output = packet.getData();
+                    outSocket.send(packet);
+                    Log.d("Async", "Packet sent");
                 }
 
             } catch (Exception e) {
@@ -228,15 +228,15 @@ public class MadDirectLayer extends BroadcastReceiver {
 
     }
     public static int getPacketPort(){
-        return socketPort;
+        return Utility.RECEIVER_PORT;
     }
     public static InetAddress getBroadcastIP(){
-        try {
+        /*try {
             return getBroadcastAddress();
         } catch (IOException e) {
             e.printStackTrace();
 
-        }
+        }*/
         InetAddress addr = null;
         try {
             addr = InetAddress.getByName("192.168.49.255");
@@ -246,11 +246,11 @@ public class MadDirectLayer extends BroadcastReceiver {
         return addr;
     }
     //UTILS USED BY THE MADAPP LAYER
-    private static InetAddress getBroadcastAddress() throws IOException {
+    /*private static InetAddress getBroadcastAddress() throws IOException {
         Log.d("MadAppASync","Getting broadcast address");
         WifiManager wifi = (WifiManager) mActivity.getSystemService(Context.WIFI_SERVICE);
-        String localIp = getDottedDecimalIP(getLocalIPAddress());
-        Log.d("LocalIp", localIp);
+        //String localIp = getDottedDecimalIP(getLocalIPAddress());
+        //Log.d("LocalIp", localIp);
 
         DhcpInfo dhcp = wifi.getDhcpInfo();
 
@@ -262,10 +262,10 @@ public class MadDirectLayer extends BroadcastReceiver {
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++)
             quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        Log.d("MadAppASync",InetAddress.getByAddress(quads).toString());
+        //Log.d("MadAppASync",InetAddress.getByAddress(quads).toString());
         InetAddress addr = InetAddress.getByName("192.168.49.255");
         return addr;
-    }
+    }*/
 
     private static String getDottedDecimalIP(byte[] ipAddr) {
         //convert to dotted decimal notation:
@@ -294,9 +294,9 @@ public class MadDirectLayer extends BroadcastReceiver {
                 }
             }
         } catch (SocketException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+            Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
         } catch (NullPointerException ex) {
-            //Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
+            Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
         }
         return null;
     }

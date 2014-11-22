@@ -38,4 +38,16 @@ public class Chunk extends Packet {
         result = 31 * result + chunkId;
         return result;
     }
+
+    //PRECONDITION: THE SIZE OF DATAIN HAS TO MATCH THE SIZE THE OBJECT WAS INITALIZED WITH.
+    public int setData(byte[] datain){
+        //returns 1 if successful, 0 if failed
+        if(!(data.length == datain.length)){
+            return 0;
+        }
+        for(int i=0; i<datain.length; i++){
+            data[i]=datain[i];
+        }
+        return 1;
+    }
 }

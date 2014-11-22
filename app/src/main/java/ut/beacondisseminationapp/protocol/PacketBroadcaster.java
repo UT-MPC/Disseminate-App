@@ -16,25 +16,34 @@ public class PacketBroadcaster implements Runnable {
 	public void run() {
 		//System.out.println("Preparing subscription!");
 		//Driver.subscribe();
-        //android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE);
         while (!Thread.interrupted()) {
-            if (Protocol.readyForSelect.get()) {
+            //if (Protocol.readyForSelect.get()) {
                 Chunk chunkToSend = Protocol.selectChunk();
 
                 if (chunkToSend != null) {
-                    Log.d("PacketBroadcaster", "Broadcasting: (" + chunkToSend.itemId + "," + chunkToSend.chunkId + ")");
+
                     byte[] chunkBuf = Utility.serialize(chunkToSend, Utility.BUF_SIZE);
                     DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
-                    Log.d("PacketBroadcaster", "Length of chunkPacket: " + chunkBuf.length);
+                    Log.d("PacketBroadcaster", "Broadcasting: ( " + chunkToSend.itemId + ", "
+                            + chunkToSend.chunkId + " ) [ "+chunkBuf.length+" ]");
+                    //Log.d("PacketBroadcaster", "Length of chunkPacket: " + chunkBuf.length);
                     Protocol.mContainer.broadcast_packet(chunkPacket);
                     //MobileHost.chunkSocket.receive(recvPack);
                     //MobileHost.chunkQueue.put(recvPack);
                     //recvChunk = (Chunk) Utility.deserialize
                 } else { // wait for a state change;
-                    Log.d("PacketBroadcaster", "selectChunk did not find anything to send, waiting for state change");
-                    Protocol.readyForSelect.set(false);
+                    Log.d("PacketBroadcaster", "Waiting for state change to broadcast again...");
+                    synchronized(Protocol.selectMonitor) {
+                        try {
+                            Protocol.selectMonitor.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    //Protocol.readyForSelect.set(false);
                 }
-            }
+            //}
         }
 	}
 	

@@ -1,5 +1,6 @@
 package ut.beacondisseminationapp.protocol;
 
+import android.os.*;
 import android.util.Log;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class BeaconBroadcaster extends TimerTask {
 	
 	@Override
 	public void run() {
-        //android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE);
 		// Send beacon
 		byte [] beaconBuf = Utility.serialize(Protocol.myBeacon, Utility.BUF_SIZE);
 		DatagramPacket updatedBeacon = new DatagramPacket(beaconBuf, beaconBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);

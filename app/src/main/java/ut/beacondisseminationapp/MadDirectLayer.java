@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -15,7 +14,6 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
@@ -27,11 +25,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import ut.beacondisseminationapp.common.Utility;
-
-
-/**
- * Created by Venkat on 11/4/14.
- */
 
 public class MadDirectLayer extends BroadcastReceiver {
 
@@ -208,7 +201,7 @@ public class MadDirectLayer extends BroadcastReceiver {
                 outSocket = new DatagramSocket(Utility.BROADCASTER_PORT);
                 outSocket.setReuseAddress(true);
                 outSocket.setBroadcast(true);
-                Log.d("SocketMessage", "Socket Initalized.");
+                Log.d("BroadcastThread", "Socket Initialized.");
                // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
                     //output = mCont.next_txitem();
@@ -216,13 +209,13 @@ public class MadDirectLayer extends BroadcastReceiver {
                     DatagramPacket packet = mCont.next_txitem();
                     output = packet.getData();
                     outSocket.send(packet);
-                    Log.d("Async", "Packet sent");
+                    //Log.d("BroadcastThread", "Packet sent");
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
                 //outSocket.close();
-                Log.d("Error", "Error initalizing the push.");
+                Log.d("Error", "Error initializing the push.");
             }
         }
 

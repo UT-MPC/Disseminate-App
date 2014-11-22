@@ -1,18 +1,27 @@
 package ut.beacondisseminationapp.common;
 
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Picture;
+import android.graphics.drawable.PictureDrawable;
+import android.widget.ImageView;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Random;
+import java.util.Stack;
 
 public class Utility {
-
-	public static HashMap<String, String> macToIp = new HashMap<String, String>();
 	
 	public static InetAddress broadcastAddr = null;
 	
@@ -34,22 +43,16 @@ public class Utility {
     public static final int RECEIVER_PORT = 15270;
     public static final int BROADCASTER_PORT = 15268;
 
+    public static final int BEACON_INTERVAL =  200;
+
 	public final static Random rng = new Random(System.currentTimeMillis());
 	
 	public static void init() {
-		macToIp.put("00:1b:b1:00:e6:82", "10.11.12.40");
-		macToIp.put("00:1b:b1:00:99:73", "10.11.12.41");
-		macToIp.put("00:1b:b1:00:e8:4c", "10.11.12.42");
-		macToIp.put("00:1b:b1:00:9a:63", "10.11.12.44");
-		macToIp.put("b8:e8:56:39:49:ac", "10.11.12.200");
-		
 		try {
 			broadcastAddr = InetAddress.getByName("192.168.49.255");
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+            e.printStackTrace();
+        }
 	}
 
 	public static int sizeOfSerial(Object obj) {
@@ -61,7 +64,6 @@ public class Utility {
 			oos.flush();
 			oos.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return bos.toByteArray().length;
@@ -106,5 +108,5 @@ public class Utility {
 
 		return null;
 	}
-	
+
 }

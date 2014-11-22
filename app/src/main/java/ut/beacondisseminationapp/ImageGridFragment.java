@@ -216,12 +216,12 @@ public class ImageGridFragment extends Fragment {
 
                     @Override
                     public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                        Log.d(TAG, "Could not load image");
+                        //Log.d(TAG, "Could not load image");
                     }
 
                     @Override
                     public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                        Log.d(TAG, "Image successfully loaded");
+                        //Log.d(TAG, "Image successfully loaded");
                     }
 
                     @Override

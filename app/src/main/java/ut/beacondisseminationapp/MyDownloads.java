@@ -6,6 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -15,10 +18,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Stack;
 
 import ut.beacondisseminationapp.common.Chunk;
 import ut.beacondisseminationapp.common.Utility;
@@ -26,7 +36,8 @@ import ut.beacondisseminationapp.protocol.Protocol;
 
 public class MyDownloads extends Activity implements ImageGridFragment.OnImageGridListener,
         DownloadButtonsFragment.OnDownloadButtonsListener,
-        Protocol.DisseminationProtocolCallback{
+        Protocol.DisseminationProtocolCallback,
+        ImageFragment.OnImageListener {
 
     private static final String TAG = MyDownloads.class.getSimpleName();
 
@@ -42,6 +53,8 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
     HashMap<String, Boolean> itemToDownload = new HashMap<String, Boolean>();
+    HashMap<String, String> itemToImageName = new HashMap<String, String>();
+    HashMap<String, ArrayList<Chunk>> itemToChunks = new HashMap<String, ArrayList<Chunk>>();
     //private int buttonsStackId = -1;
     //private int gridStackId = -1;
 
@@ -142,6 +155,16 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         desiredItems.add("Item2");
         desiredItems.add("Item3");
         Protocol.initialize(desiredItems, txrxfifo, this);
+        itemToImageName.put(desiredItems.get(0),"australia.jpg");
+        itemToImageName.put(desiredItems.get(1),"wind_turbine.jpg");
+        itemToImageName.put(desiredItems.get(2),"violin.jpg");
+        itemToImageName.put(desiredItems.get(3),"abudhabi.jpg");
+
+        for (String itemId: desiredItems) {
+            Log.d(TAG, "Adding desired items to itemToChunks: "+itemId);
+            Log.d(TAG, "Image file name: "+itemToImageName.get(itemId));
+            itemToChunks.put(itemId, makeChunks(itemToImageName.get(itemId), itemId, 0));
+        }
 
         //ImageGridFragment mIGFragment = ImageGridFragment.newInstance(null,null,null);
         Log.d(TAG, "Adding grid fragments");
@@ -299,8 +322,15 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     }
 
     @Override
-    public void itemComplete(String itemId, Object[] contents) {
+    public void itemComplete(String itemId, ArrayList<Chunk> contents) {
         //setTitle("Done!");
+        byte[] imageContents = chunksToByteArray(contents);
+
+        ImageFragment iFragment = ImageFragment.newInstance(imageContents);
+        getFragmentManager().beginTransaction()
+                .replace(itemToContainer.get(itemId), iFragment)
+                        //.addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -328,6 +358,20 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         selectedItem = null;
     }
 
+    public byte[] chunksToByteArray(ArrayList<Chunk> inChunks) {
+        int total_length = 0;
+        for (Chunk chk: inChunks) {
+            total_length += chk.data.length;
+        }
+        byte [] result = new byte[total_length];
+        int marker = 0;
+        for (Chunk chk: inChunks) {
+            System.arraycopy(chk.data, 0, result, marker, chk.data.length);
+            marker+=chk.data.length;
+        }
+        return result;
+    }
+
     @Override
     public void downloadButtonHandler() {
         Log.d(TAG, "downloadButtonHandler");
@@ -336,26 +380,106 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         buttonsContainer.startAnimation(slideDownIn);
         buttonsContainer.setVisibility(View.INVISIBLE);
         if (selectedItem != null) {
-            Protocol.populateDummyItem(selectedItem);
+            //Protocol.populateDummyItem(selectedItem);
+            Protocol.populateItem(selectedItem, itemToChunks.get(selectedItem));
 
-            ArrayList<String> urls = itemToSquares.get(selectedItem);
+            /*ArrayList<String> urls = itemToSquares.get(selectedItem);
             if (urls != null) {
                 for (int i=0; i<Utility.NUM_CHUNKS; ++i) {
                     urls.set(i, "assets://100px_light_blue.png");
                     //urls.set(i, "assets://100px_blue_square.png");
                 }
-            }
+            }*/
+
             itemToDownload.put(selectedItem, true);
-            ImageGridFragment newIGFragment = ImageGridFragment.newInstance(selectedItem, itemToDownload.get(selectedItem), null, urls, null);
+            byte[] imageContents = chunksToByteArray(itemToChunks.get(selectedItem));
+
+            ImageFragment iFragment = ImageFragment.newInstance(imageContents);
+            getFragmentManager().beginTransaction()
+                    .replace(itemToContainer.get(selectedItem), iFragment)
+                            //.addToBackStack(null)
+                    .commit();
+
+            /*ImageGridFragment newIGFragment = ImageGridFragment.newInstance(selectedItem, itemToDownload.get(selectedItem), null, urls, null);
             getFragmentManager().beginTransaction()
                     .replace(itemToContainer.get(selectedItem), newIGFragment)
                             //.addToBackStack(null)
-                    .commit();
+                    .commit();*/
+
             selectedItem = null;
         }
 
     }
 
+    //Chunker Codes
+    public ArrayList<Chunk> makeChunks(String fileName, String itemId, int chunkSize){
+        ArrayList<Chunk> returnList = new ArrayList<Chunk>();
+        //convert the picture into a bitmap
+        //PictureDrawable drawfoundation = new PictureDrawable(image);
+        //Bitmap bitmap = Bitmap.createBitmap(drawfoundation.getIntrinsicWidth(), drawfoundation.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        //Canvas canvas = new Canvas(bitmap);
+        //canvas.drawPicture(drawfoundation.getPicture());
+
+        AssetManager assetManager = getAssets();
+        InputStream istr = null;
+        byte[] data = new byte[32768];
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            istr = assetManager.open(fileName);
+            int nRead;
+            while ((nRead = istr.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+        /*Bitmap bitmap = BitmapFactory.decodeStream(istr);
+        Log.d(TAG, "Width: "+bitmap.getWidth());
+        Log.d(TAG, "Height: "+bitmap.getHeight());
+        //get the byte data from the bitmap and put it in an array
+        int bytesize = bitmap.getByteCount();
+
+        Log.d(TAG, "Num bytes in image: "+bytesize);
+        ByteBuffer bytebox = ByteBuffer.allocate(bytesize);
+        bitmap.copyPixelsToBuffer(bytebox);
+        byte[] arrayBox = bytebox.array();*/
+        byte[] arrayBox = buffer.toByteArray();
+
+        Log.d(TAG, "Num bytes in arrayBox: "+arrayBox.length);
+
+        chunkSize = (int) Math.ceil((double)arrayBox.length/(double)Utility.NUM_CHUNKS);
+
+        //assuming!! chunksize is the max size in bytes for each chunk
+        //create a stack of all the bytes in order (first pop is first element in array)
+        Stack<Byte> bytestack = new Stack<Byte>();
+        for(int i=arrayBox.length-1; i>=0; i--){
+            bytestack.push(Byte.valueOf(arrayBox[i]));
+        }
+        //once the stack is initalized, start constructing the arraylist
+        int chunkidcounter=0;
+        while(!bytestack.isEmpty()){
+            Chunk tempchunk = new Chunk(itemId, chunkidcounter, chunkSize, "");
+            chunkidcounter++;
+            byte[] newbytes;
+            if(bytestack.size()>=chunkSize){
+                newbytes= new byte[chunkSize];  //allocate a bytearray of max size
+            }
+            else{
+                newbytes = new byte[bytestack.size()];  //allocate a bytearray of size rem.
+            }
+            for(int i=0; i<chunkSize && !bytestack.isEmpty(); i++){
+                newbytes[i]=bytestack.pop();
+            }
+            tempchunk.setData(newbytes);
+            returnList.add(tempchunk);
+        }
+        Log.d(TAG,"Number of chunks: "+returnList.size());
+        return returnList;
+    }
 
     /*private class SpoofChunkReceive implements Runnable {   //constant retrieval process
 

@@ -12,8 +12,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import ut.beacondisseminationapp.common.Chunk;
@@ -21,6 +25,7 @@ import ut.beacondisseminationapp.common.Utility;
 import ut.beacondisseminationapp.protocol.Protocol;
 
 public class MyDownloads extends Activity implements ImageGridFragment.OnImageGridListener,
+        DownloadButtonsFragment.OnDownloadButtonsListener,
         Protocol.DisseminationProtocolCallback{
 
     private static final String TAG = MyDownloads.class.getSimpleName();
@@ -32,6 +37,11 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     double latitude;
     double longitude;
     private SharedPreferences mPrefs;
+    public static String selectedItem = null;
+
+    HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
+    HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
+    HashMap<String, Boolean> itemToDownload = new HashMap<String, Boolean>();
     //private int buttonsStackId = -1;
     //private int gridStackId = -1;
 
@@ -84,8 +94,8 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         //userId = savedState.getString("userId");
     }
 
-    ArrayList<String> imageUrls;
-    ArrayList<Integer> completedChunks;
+    //ArrayList<String> imageUrls;
+    //ArrayList<Integer> completedChunks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,32 +138,103 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         Utility.init();
         ArrayList<String> desiredItems = new ArrayList<String>();
         desiredItems.add("Item0");
+        desiredItems.add("Item1");
+        desiredItems.add("Item2");
+        desiredItems.add("Item3");
         Protocol.initialize(desiredItems, txrxfifo, this);
 
+        //ImageGridFragment mIGFragment = ImageGridFragment.newInstance(null,null,null);
+        Log.d(TAG, "Adding grid fragments");
+        //getFragmentManager().beginTransaction().replace(R.id.stream_grid_container, mIGFragment).commit();
+        ArrayList<String> imageUrls = new ArrayList<String> ();
+        //completedChunks = new ArrayList<Integer>();
+        for (int i=0; i<Utility.NUM_CHUNKS; ++i) {
+            imageUrls.add("assets://100px_light_blue_square.jpg");
+            //completedChunks.add(0);
+        }
         //Log.d(TAG, "userId: " + userId);
-        if (findViewById(R.id.image_grid_container) != null) {
+        for (String item: desiredItems) {
+            itemToSquares.put(item, new ArrayList<String>(imageUrls));
+            itemToDownload.put(item, false);
+        }
+        if (findViewById(R.id.image0_grid_container) != null) {
             if (savedInstanceState != null) {
                 return;
             }
-
-            //ImageGridFragment mIGFragment = ImageGridFragment.newInstance(null,null,null);
-            Log.d(TAG, "Adding grid fragment");
-            //getFragmentManager().beginTransaction().replace(R.id.stream_grid_container, mIGFragment).commit();
-            imageUrls = new ArrayList<String> ();
-            completedChunks = new ArrayList<Integer>();
-            int chunk_count = 64;
-            for (int i=0; i<chunk_count; ++i) {
-                imageUrls.add("assets://100px_light_blue_square.jpg");
-                completedChunks.add(0);
+            String curItem = desiredItems.get(0);
+            if (curItem != null) {
+                itemToContainer.put(curItem, R.id.image0_grid_container);
+                ImageGridFragment frag0 = ImageGridFragment.newInstance(curItem, false, null, imageUrls, null);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.image0_grid_container, frag0)
+                                //.addToBackStack(null)
+                        .commit();
             }
 
-            ImageGridFragment newIGFragment = ImageGridFragment.newInstance(null, imageUrls, null);
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.image_grid_container, newIGFragment)
-                    //.addToBackStack(null)
-                    .commit();
+        }
+        if (findViewById(R.id.image1_grid_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
+            String curItem = desiredItems.get(1);
+            if (curItem != null) {
+                itemToContainer.put(curItem, R.id.image1_grid_container);
+                ImageGridFragment frag0 = ImageGridFragment.newInstance(curItem, false, null, imageUrls, null);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.image1_grid_container, frag0)
+                                //.addToBackStack(null)
+                        .commit();
+            }
+
+        }
+        if (findViewById(R.id.image2_grid_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
+            String curItem = desiredItems.get(2);
+            if (curItem != null) {
+                itemToContainer.put(curItem, R.id.image2_grid_container);
+                ImageGridFragment frag0 = ImageGridFragment.newInstance(curItem, false, null, imageUrls, null);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.image2_grid_container, frag0)
+                                //.addToBackStack(null)
+                        .commit();
+            }
+
+        }
+        if (findViewById(R.id.image3_grid_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
+            String curItem = desiredItems.get(3);
+            if (curItem != null) {
+                itemToContainer.put(curItem, R.id.image3_grid_container);
+                ImageGridFragment frag0 = ImageGridFragment.newInstance(curItem, false, null, imageUrls, null);
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.image3_grid_container, frag0)
+                                //.addToBackStack(null)
+                        .commit();
+            }
+
         }
 
+        if (findViewById(R.id.download_buttons_container) != null) {
+            if (savedInstanceState != null) {
+                return;
+            }
+            if (userId != null) {
+                showSubscribe = true;
+            } else {
+                showSubscribe = false;
+            }
+            View buttonsContainer = findViewById(R.id.download_buttons_container);
+            buttonsContainer.setVisibility(View.INVISIBLE);
+            DownloadButtonsFragment dbFragment = DownloadButtonsFragment.newInstance(false);
+
+            Log.d(TAG, "Adding buttons fragment");
+            // would set arguments from intent here, but we don't have any
+            getFragmentManager().beginTransaction().replace(R.id.download_buttons_container, dbFragment).commit();
+        }
         //Thread spoofChunkThread = new Thread(new SpoofChunkReceive(null,null));
         //spoofChunkThread.start();
 
@@ -208,10 +289,13 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     }
 
     @Override
-    public void imageClickHandler() {
+    public void imageClickHandler(String itemId) {
         Log.d(TAG, "imageClickHandler");
-
-        Protocol.populateDummyItem();
+        Animation slideUpIn = AnimationUtils.loadAnimation(this, R.anim.slide_up_in);
+        View buttonsContainer = findViewById(R.id.download_buttons_container);
+        buttonsContainer.setVisibility(View.VISIBLE);
+        buttonsContainer.startAnimation(slideUpIn);
+        selectedItem = itemId;
     }
 
     @Override
@@ -220,17 +304,60 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     }
 
     @Override
-    public void chunkComplete(Chunk completedChunk) {
-        imageUrls.set(completedChunk.chunkId, "assets://100px_blue_square.png");
-        ImageGridFragment newIGFragment = ImageGridFragment.newInstance(null, imageUrls, null);
+    public void chunkComplete(String itemId, Chunk completedChunk) {
+        ArrayList<String> urls = itemToSquares.get(itemId);
+        if (urls == null) {
+            return;
+        }
+        urls.set(completedChunk.chunkId, "assets://100px_light_blue.png");
+        //urls.set(completedChunk.chunkId, "assets://100px_blue_square.png");
+        ImageGridFragment newIGFragment = ImageGridFragment.newInstance(itemId, itemToDownload.get(itemId), null, urls, null);
         getFragmentManager().beginTransaction()
-                .replace(R.id.image_grid_container, newIGFragment)
+                .replace(itemToContainer.get(itemId), newIGFragment)
                         //.addToBackStack(null)
                 .commit();
     }
 
+    @Override
+    public void cancelButtonHandler() {
+        Log.d(TAG, "cancelButtonHandler");
+        Animation slideDownIn = AnimationUtils.loadAnimation(this, R.anim.slide_down_in);
+        View buttonsContainer = findViewById(R.id.download_buttons_container);
+        buttonsContainer.startAnimation(slideDownIn);
+        buttonsContainer.setVisibility(View.INVISIBLE);
+        selectedItem = null;
+    }
 
-    private class SpoofChunkReceive implements Runnable {   //constant retrieval process
+    @Override
+    public void downloadButtonHandler() {
+        Log.d(TAG, "downloadButtonHandler");
+        Animation slideDownIn = AnimationUtils.loadAnimation(this, R.anim.slide_down_in);
+        View buttonsContainer = findViewById(R.id.download_buttons_container);
+        buttonsContainer.startAnimation(slideDownIn);
+        buttonsContainer.setVisibility(View.INVISIBLE);
+        if (selectedItem != null) {
+            Protocol.populateDummyItem(selectedItem);
+
+            ArrayList<String> urls = itemToSquares.get(selectedItem);
+            if (urls != null) {
+                for (int i=0; i<Utility.NUM_CHUNKS; ++i) {
+                    urls.set(i, "assets://100px_light_blue.png");
+                    //urls.set(i, "assets://100px_blue_square.png");
+                }
+            }
+            itemToDownload.put(selectedItem, true);
+            ImageGridFragment newIGFragment = ImageGridFragment.newInstance(selectedItem, itemToDownload.get(selectedItem), null, urls, null);
+            getFragmentManager().beginTransaction()
+                    .replace(itemToContainer.get(selectedItem), newIGFragment)
+                            //.addToBackStack(null)
+                    .commit();
+            selectedItem = null;
+        }
+
+    }
+
+
+    /*private class SpoofChunkReceive implements Runnable {   //constant retrieval process
 
 
         public SpoofChunkReceive(ArrayList<String> imageUrls, ArrayList<Integer> completedChunks) {
@@ -269,6 +396,6 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
             //return null;
         }
-    }
+    }*/
 
 }

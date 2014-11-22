@@ -41,17 +41,18 @@ public class Protocol {
     
     public static Timer beaconTimer;
     //public static String myIp;
+    public static long cur_exec = 0;
     
     private static DisseminationProtocolCallback mProtocolCallback;
     
     
-    public static void populateDummyItem() {
-        myBeacon.bvMap.put("Item0", new BitVector(-1L));
-        Item dummyItem = new Item("Item0", Utility.CHK_SIZE, Utility.NUM_CHUNKS);
+    public static void populateDummyItem(String itemId) {
+        myBeacon.bvMap.put(itemId, new BitVector(-1L));
+        Item dummyItem = new Item(itemId, Utility.CHK_SIZE, Utility.NUM_CHUNKS);
         for (int i=0; i<Utility.NUM_CHUNKS; ++i) {
-            dummyItem.chunks.put(i, new Chunk("Item0", i, Utility.CHK_SIZE, null));
+            dummyItem.chunks.put(i, new Chunk(itemId, i, Utility.CHK_SIZE, null));
         }
-        items.put("Item0", dummyItem);
+        items.put(itemId, dummyItem);
     }
     
     // used by UI thread to initialize protocol
@@ -100,7 +101,12 @@ public class Protocol {
     }
     
     public static Chunk randomAlgorithm() {
-        Log.d("randomAlgorithm", "Selecting chunk...");
+        long last_exec = cur_exec;
+        long start = System.currentTimeMillis();
+        cur_exec = start;
+        long timeBw = cur_exec - last_exec;
+        //Log.d("randomAlgorthm", "Time since last selection: "+timeBw);
+        //Log.d("randomAlgorithm", "Selecting chunk...");
         HashMap<Chunk, Double> uniquenessMap = new HashMap<Chunk, Double>();
         
         Random rand =  new Random();
@@ -125,10 +131,10 @@ public class Protocol {
                             }
                         }
                     }
-                    Log.d("randomAlgorithm", "Potenial chunks found: "+cntFound);
                 }
             }
         }
+        Log.d("randomAlgorithm", "Potential chunks found: "+uniquenessMap.size());
         
         Object[] potentialChunks = uniquenessMap.keySet().toArray();
         Chunk selectedChunk;
@@ -138,6 +144,9 @@ public class Protocol {
         } else {
             selectedChunk = null;
         }
+        long end = System.currentTimeMillis();
+        long elapsed = end - start;
+        Log.d("randomAlgorithm", "Selection time: "+elapsed);
         return selectedChunk;
 
     }
@@ -151,10 +160,10 @@ public class Protocol {
                 if (i.chunks.get(newChunk.chunkId) == null) { // check to make sure we don't have the chunk
                     Log.d("ProcessChunk", "Datastore updated...");
                     i.chunks.put(newChunk.chunkId, newChunk);
-                    Log.d("ProcessChunk", "Completed so far: "+i.chunks.size());
+                    //Log.d("ProcessChunk", "Completed so far: "+i.chunks.size());
                     BitVector curBv = myBeacon.bvMap.get(newChunk.itemId);
                     curBv.setBit(newChunk.chunkId);
-                    mProtocolCallback.chunkComplete(newChunk);
+                    mProtocolCallback.chunkComplete(i.name, newChunk);
                     if (curBv.isCompleted()) {
                         Log.d("ProcessChunk", "Done with item!");
                         mProtocolCallback.itemComplete(i.name, i.chunks.values().toArray());
@@ -169,7 +178,7 @@ public class Protocol {
         
     
     public static void processBeacon(Beacon newBeacon) {
-        Log.d("ProcessBeacon", "Updating beacon map...");
+        //Log.d("ProcessBeacon", "Updating beacon map...");
         if (newBeacon != null) {
             if (!newBeacon.userId.equals(myId)) {
                 beacons.put(newBeacon.userId, newBeacon);
@@ -180,6 +189,6 @@ public class Protocol {
     
     public interface DisseminationProtocolCallback {
             public void itemComplete(String itemId, Object[] contents);
-            public void chunkComplete(Chunk completedChunk);
+            public void chunkComplete(String itemId, Chunk completedChunk);
         }    
 }

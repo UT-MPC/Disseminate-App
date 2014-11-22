@@ -3,6 +3,7 @@ package ut.beacondisseminationapp;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +32,8 @@ public class ImageGridFragment extends Fragment {
     private static final String ARG_LINKS = "ClickUrls";
     private static final String ARG_IMAGES = "ImageUrls";
     private static final String ARG_LABELS = "TextLabels";
+    private static final String ARG_ID = "Id";
+    private static final String ARG_HIGHLIGHT = "Highlight";
 
     private OnImageGridListener mListener;
     DisplayImageOptions options;
@@ -64,6 +67,8 @@ public class ImageGridFragment extends Fragment {
     private ArrayList<String> clickUrls;
     private ArrayList<String> imageUrls;
     private ArrayList<String> textLabels;
+    private String id;
+    private boolean highlight;
 
     String[] testImageUrls = new String[] {
             "https://lh6.googleusercontent.com/-55osAWw3x0Q/URquUtcFr5I/AAAAAAAAAbs/rWlj1RUKrYI/s1024/A%252520Photographer.jpg",
@@ -99,12 +104,14 @@ public class ImageGridFragment extends Fragment {
     };
 
     // TODO: Rename and change types and number of parameters
-    public static ImageGridFragment newInstance(ArrayList<String> clickUrls, ArrayList<String> imageUrls, ArrayList<String> textLabels) {
+    public static ImageGridFragment newInstance(String id, boolean highlight, ArrayList<String> clickUrls, ArrayList<String> imageUrls, ArrayList<String> textLabels) {
         ImageGridFragment fragment = new ImageGridFragment();
         Bundle args = new Bundle();
         args.putStringArrayList(ARG_LINKS, clickUrls);
         args.putStringArrayList(ARG_IMAGES, imageUrls);
         args.putStringArrayList(ARG_LABELS, textLabels);
+        args.putString(ARG_ID, id);
+        args.putBoolean(ARG_HIGHLIGHT, highlight);
         fragment.setArguments(args);
         return fragment;
     }
@@ -127,6 +134,8 @@ public class ImageGridFragment extends Fragment {
             clickUrls = getArguments().getStringArrayList(ARG_LINKS);
             imageUrls = getArguments().getStringArrayList(ARG_IMAGES);
             textLabels = getArguments().getStringArrayList(ARG_LABELS);
+            id = getArguments().getString(ARG_ID);
+            highlight = getArguments().getBoolean(ARG_HIGHLIGHT);
         }
 
     }
@@ -143,12 +152,17 @@ public class ImageGridFragment extends Fragment {
 
         GridView gridview = (GridView) rootView.findViewById(R.id.grid);
         gridview.setAdapter(new ImageAdapter());
+        if (highlight) {
+            gridview.setBackgroundColor(Color.parseColor("#607D8B"));
+        }
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                Log.d(TAG, "Position: " + position);
-                mListener.imageClickHandler();
+                //Log.d(TAG, "Position: " + position);
+                //view.setBackgroundColor(Color.parseColor("#e59a0f"));
+                //adapterView.setBackgroundColor(Color.parseColor("#607D8B"));
+                mListener.imageClickHandler(ImageGridFragment.this.id);
             }
         });
         return rootView;
@@ -242,7 +256,7 @@ public class ImageGridFragment extends Fragment {
     }
 
     public interface OnImageGridListener {
-        public void imageClickHandler();
+        public void imageClickHandler(String itemId);
     }
 
     public void initImageLoader() {

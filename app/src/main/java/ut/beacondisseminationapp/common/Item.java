@@ -21,10 +21,10 @@ public class Item implements Serializable {
 	public long receivedVirtual = 0;
 	public long discardedVirtual = 0;
 	
-	public Item (String name, int chunkSize, int numChunks) {
+	public Item (String name, int numChunks) {
 		this.name = name;
         this.chunks = new TreeMap<Integer, Chunk>();
-		this.chunkSize = chunkSize;
+		//this.chunkSize = chunkSize;
         this.numChunks = numChunks;
 		//this.size = size;
 		//this.bv = bv;

@@ -19,7 +19,7 @@ public class Utility {
 	public final static int NUM_CHUNKS = 64;
 	
 	public final static int BUF_SIZE = 1024*101;
-	public final static int CHK_SIZE = 1024*32;
+	//public final static int CHK_SIZE = 1024*32;
 	
 	public final static int BEACON_SIZE = 1024*2;
 	//public final static int SUB_SIZE = 1024*1;

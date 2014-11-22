@@ -48,9 +48,9 @@ public class Protocol {
     
     public static void populateDummyItem(String itemId) {
         myBeacon.bvMap.put(itemId, new BitVector(-1L));
-        Item dummyItem = new Item(itemId, Utility.CHK_SIZE, Utility.NUM_CHUNKS);
+        Item dummyItem = new Item(itemId, Utility.NUM_CHUNKS);
         for (int i=0; i<Utility.NUM_CHUNKS; ++i) {
-            dummyItem.chunks.put(i, new Chunk(itemId, i, Utility.CHK_SIZE, null));
+            dummyItem.chunks.put(i, new Chunk(itemId, i, 1024*32, null));
         }
         items.put(itemId, dummyItem);
     }
@@ -91,7 +91,7 @@ public class Protocol {
         }
         // Add item to local list of items
         if (items.get(itemId) == null) {
-            items.put(itemId, new Item(itemId, Utility.CHK_SIZE, Utility.NUM_CHUNKS));
+            items.put(itemId, new Item(itemId, Utility.NUM_CHUNKS));
         }
     }
     

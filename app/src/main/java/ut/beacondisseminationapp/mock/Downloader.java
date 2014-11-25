@@ -1,8 +1,9 @@
 package ut.beacondisseminationapp.common;
 
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Random;
 /**
 * Downloader
 *
@@ -11,7 +12,7 @@ import java.util.TimerTask;
 public class Downloader {
 	long datarate; //in bits per second
 	int downloadStrategy; //0,1,2
-	ArrayList<Chunk> masterFile; 
+	ArrayList<Chunk> masterFile;
 	ArrayList<Chunk> downloadedFile;
 	/*constructor*/
 	public Downloader(long rate, int strategy, ArrayList<Chunk> file){

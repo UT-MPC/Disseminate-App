@@ -4,8 +4,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-<<<<<<< Updated upstream
-=======
+
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -13,7 +12,7 @@ import android.graphics.Canvas;
 import android.graphics.Picture;
 import android.graphics.drawable.PictureDrawable;
 import android.net.DhcpInfo;
->>>>>>> Stashed changes
+
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -35,21 +34,19 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
-<<<<<<< HEAD
+
 
 import ut.beacondisseminationapp.common.Utility;
 
-<<<<<<< Updated upstream
-=======
-=======
+
 import java.util.Stack;
->>>>>>> MyBranch
+
 
 /**
  * Created by Venkat on 11/4/14.
  */
 
->>>>>>> Stashed changes
+
 public class MadDirectLayer extends BroadcastReceiver {
 
     private static WifiP2pManager mManager;
@@ -228,17 +225,17 @@ public class MadDirectLayer extends BroadcastReceiver {
                 Log.d("BroadcastThread", "Socket Initialized.");
                // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
-<<<<<<< HEAD
+
                     //output = mCont.next_txitem();
                     //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
                     DatagramPacket packet = mCont.next_txitem();
                     output = packet.getData();
                     outSocket.send(packet);
-<<<<<<< Updated upstream
+
                     //Log.d("BroadcastThread", "Packet sent");
-=======
+
                     Log.d("Async", "Packet sent");
-=======
+
                     while (!mCont.broadcast_isempty()) { //only runs while there are items to send out
                         //output = mCont.next_txitem();
                         //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
@@ -249,8 +246,7 @@ public class MadDirectLayer extends BroadcastReceiver {
                         Log.d("Async", "Packet sent");
                         //Toast.makeText(mActivity.getApplicationContext(), "Packet sent.", Toast.LENGTH_SHORT).show();
                     }
->>>>>>> MyBranch
->>>>>>> Stashed changes
+
                 }
 
             } catch (Exception e) {

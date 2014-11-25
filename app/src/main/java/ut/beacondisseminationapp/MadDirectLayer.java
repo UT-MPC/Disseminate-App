@@ -4,6 +4,16 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+<<<<<<< Updated upstream
+=======
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Picture;
+import android.graphics.drawable.PictureDrawable;
+import android.net.DhcpInfo;
+>>>>>>> Stashed changes
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -12,6 +22,7 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.os.PowerManager;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.net.DatagramPacket;
@@ -21,11 +32,24 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
+<<<<<<< HEAD
 
 import ut.beacondisseminationapp.common.Utility;
 
+<<<<<<< Updated upstream
+=======
+=======
+import java.util.Stack;
+>>>>>>> MyBranch
+
+/**
+ * Created by Venkat on 11/4/14.
+ */
+
+>>>>>>> Stashed changes
 public class MadDirectLayer extends BroadcastReceiver {
 
     private static WifiP2pManager mManager;
@@ -204,12 +228,29 @@ public class MadDirectLayer extends BroadcastReceiver {
                 Log.d("BroadcastThread", "Socket Initialized.");
                // Log.d("Async", "Item Retrieved.");
                 while(true) {   //constantly runs
+<<<<<<< HEAD
                     //output = mCont.next_txitem();
                     //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
                     DatagramPacket packet = mCont.next_txitem();
                     output = packet.getData();
                     outSocket.send(packet);
+<<<<<<< Updated upstream
                     //Log.d("BroadcastThread", "Packet sent");
+=======
+                    Log.d("Async", "Packet sent");
+=======
+                    while (!mCont.broadcast_isempty()) { //only runs while there are items to send out
+                        //output = mCont.next_txitem();
+                        //DatagramPacket packet = new DatagramPacket(output, output.length, getBroadcastAddress(), 15270);
+                        //Toast.makeText(mActivity, "Packet sent.", Toast.LENGTH_SHORT);
+                        DatagramPacket packet = mCont.next_txitem();
+                        output = packet.getData();
+                        outSocket.send(packet);
+                        Log.d("Async", "Packet sent");
+                        //Toast.makeText(mActivity.getApplicationContext(), "Packet sent.", Toast.LENGTH_SHORT).show();
+                    }
+>>>>>>> MyBranch
+>>>>>>> Stashed changes
                 }
 
             } catch (Exception e) {
@@ -292,5 +333,57 @@ public class MadDirectLayer extends BroadcastReceiver {
             Log.e("AndroidNetworkAddressFactory", "getLocalIPAddress()", ex);
         }
         return null;
+    }
+
+
+    //Chunker Codes
+    public static ArrayList<Chunk> makeChunks(Picture image, int chunkSize, String picId){
+        ArrayList<Chunk> returnList = new ArrayList<Chunk>();
+        //convert the picture into a bitmap
+        PictureDrawable drawfoundation = new PictureDrawable(image);
+        Bitmap bitmap = Bitmap.createBitmap(drawfoundation.getIntrinsicWidth(), drawfoundation.getIntrinsicHeight(), Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawPicture(drawfoundation.getPicture());
+
+        //get the byte data from the bitmap and put it in an array
+        int bytesize = bitmap.getByteCount();
+        ByteBuffer bytebox = ByteBuffer.allocate(bytesize);
+        bitmap.copyPixelsToBuffer(bytebox);
+        byte[] arrayBox = bytebox.array();
+
+        //assuming!! chunksize is the max size in bytes for each chunk
+        //create a stack of all the bytes in order (first pop is first element in array)
+        Stack<Byte> bytestack = new Stack<Byte>();
+        for(int i=arrayBox.length-1; i<=0; i--){
+            bytestack.push(Byte.valueOf(arrayBox[i]));
+        }
+        //once the stack is initalized, start constructing the arraylist
+        int chunkidcounter=0;
+        while(!bytestack.isEmpty()){
+            Chunk tempchunk = new Chunk(picId, chunkidcounter, chunkSize, "");
+            chunkidcounter++;
+            byte[] newbytes;
+            if(bytestack.size()>=chunkSize){
+                newbytes= new byte[chunkSize];  //allocate a bytearray of max size
+            }
+            else{
+                newbytes = new byte[bytestack.size()];  //allocate a bytearray of size rem.
+            }
+            for(int i=0; i<chunkSize && !bytestack.isEmpty(); i++){
+                newbytes[i]=bytestack.pop();
+            }
+            tempchunk.setData(newbytes);
+            returnList.add(tempchunk);
+        }
+        return returnList;
+    }
+
+
+
+    //Function that converts the byte array into a bitmap
+    void setImage(byte[] imageData, ImageView viewer){
+        byte[] data = imageData;
+        Bitmap bmp = BitmapFactory.decodeByteArray(data, 0, data.length);
+        viewer.setImageBitmap(bmp);
     }
 }

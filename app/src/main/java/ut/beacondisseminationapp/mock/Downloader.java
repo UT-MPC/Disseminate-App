@@ -82,7 +82,7 @@ public class Downloader {
 				}
 				bit_size = 0;
 				Thread.sleep(1000); //waits 1 second
-				while (!check.get(val)){ //move bits for 1 sec
+				while (check.get(val)!=current.get(val){ //move bits for 1 sec
 					val = rand.nextInt(length);
 					downloadedFile.get(val) = masterFile.get(val);
 				}

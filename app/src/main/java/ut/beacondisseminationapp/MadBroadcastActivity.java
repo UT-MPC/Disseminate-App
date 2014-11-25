@@ -53,7 +53,6 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-        ((MadDirectLayer)mReceiver).Stay_Awake();
        // data_length = dataString.length();
         //Thread tRecv = new Thread(new PacketReceiver());
         //tRecv.start();
@@ -135,16 +134,10 @@ public class MadBroadcastActivity extends Activity {   //the main activity class
         //Toast.makeText(getApplicationContext(), "Handler executed.", Toast.LENGTH_LONG).show();
         Log.d("MadApp", "Handler executed.");
         String testSt = new String("test string");
-        int port = ((MadDirectLayer)mReceiver).getPacketPort();
-
-        InetAddress broadcastAddr = ((MadDirectLayer)mReceiver).getBroadcastIP();
-        Log.d("Here", "here");
-        txrxfifo.broadcast_packet(new DatagramPacket(testSt.getBytes(), testSt.getBytes().length, broadcastAddr , port));
+        txrxfifo.broadcast_packet(new DatagramPacket(testSt.getBytes(), testSt.getBytes().length, ((MadDirectLayer)mReceiver).getBroadcastIP(), ((MadDirectLayer)mReceiver).getPacketPort()));
 
     }
-    public void showMessage(String s){
-        Toast.makeText(this, s, Toast.LENGTH_SHORT);
-    }
+
    public void refreshHand(View v){
        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
            @Override

@@ -21,6 +21,8 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import ut.beacondisseminationapp.protocol.SendSubscription;
+import ut.beacondisseminationapp.network.SendWrapper;
 import ut.beacondisseminationapp.common.Beacon;
 import ut.beacondisseminationapp.common.BitVector;
 import ut.beacondisseminationapp.common.Chunk;
@@ -28,7 +30,6 @@ import ut.beacondisseminationapp.common.Item;
 import ut.beacondisseminationapp.common.Need;
 import ut.beacondisseminationapp.common.Subscription;
 import ut.beacondisseminationapp.common.Utility;
-import ut.beacondisseminationapp.network.SendWrapper;
 
 public class Driver {
 	

@@ -1,10 +1,7 @@
 package ut.beacondisseminationapp.mock;
 
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import ut.beacondisseminationapp.common.Chunk;
 
 /**
  * Created by Venkat on 11/26/14.
@@ -18,7 +15,7 @@ public class Sim3G {
     private static int speedBps = 0;
     private static int downloadType = 0;
     private static Timer taskSch;
-    private boolean completed = false;
+    private static boolean completed = false;
     private static CellularDataContainer datacontain;
     private static int TxPointer = 0; //pointer for the serverData
     private static int RxPointer = 0; //pointer for the downloadedData
@@ -78,7 +75,5 @@ public class Sim3G {
         }
     }
 
-
-}
 
 }

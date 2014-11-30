@@ -23,6 +23,8 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ut.beacondisseminationapp.common.Utility;
 
@@ -42,6 +44,17 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static PowerManager powerManager;
 
     private static PowerManager.WakeLock powerGrabber;
+
+    //METRICS
+    private static AtomicLong packetSentCount = new AtomicLong(0);
+    private static AtomicLong byteSentCount = new AtomicLong(0);
+    private static AtomicBoolean sentAccessLock = new AtomicBoolean(false);
+
+    private static AtomicLong packetRxCount = new AtomicLong(0);
+    private static AtomicLong byteRxCount = new AtomicLong(0);
+    private static AtomicBoolean rxAccessLock = new AtomicBoolean(false);
+
+
     //private static int socketPort = 15270;
     public MadDirectLayer(WifiP2pManager manager, Channel channel,
                                        Activity activity, Container items) {
@@ -124,6 +137,58 @@ public class MadDirectLayer extends BroadcastReceiver {
         }
     }
 
+    //Counter operations
+    public static long getPacketSent(){
+        while(sentAccessLock.get()==true){}  //spin while resource is locked.
+        return packetSentCount.get();
+    }
+    public static long getBytesSent(){
+        while(sentAccessLock.get()==true){}  //spin while resource is locked.
+        return byteSentCount.get();
+    }
+    public static long getPacketsRx(){
+        while(rxAccessLock.get()==true){}  //spin while resource is locked.
+        return packetRxCount.get();
+    }
+    public static long getBytesRx(){
+        while(rxAccessLock.get()==true){}  //spin while resource is locked.
+        return byteSentCount.get();
+    }
+
+    public static void resetAllMetrics(){
+        while(rxAccessLock.get()==true || sentAccessLock.get()==true){}  //spin while resources are locked.
+        rxAccessLock.set(true);
+        sentAccessLock.set(true);  //lock the resources, not needed since only accessed by main thread, but implemented for
+                                    // sake of symmetry
+        packetSentCount.set(0);
+        byteSentCount.set(0);
+        packetRxCount.set(0);
+        byteRxCount.set(0);
+        rxAccessLock.set(false);
+        sentAccessLock.set(false); //release the resource
+    }
+
+    public static void resetSentMetrics(){
+        while(sentAccessLock.get()==true){}  //spin while resources are locked.
+
+        sentAccessLock.set(true);  //lock the resources, not needed since only accessed by main thread, but implemented for
+                                        // sake of symmetry
+        packetSentCount.set(0);
+        byteSentCount.set(0);
+        sentAccessLock.set(false); //release the resource
+    }
+    public static void resetRxMetrics(){
+        while(rxAccessLock.get()==true){}  //spin while resources are locked.
+        rxAccessLock.set(true);  //lock the resources, not needed since only accessed by main thread, but implemented for sake of symmetry
+
+        packetRxCount.set(0);
+        byteRxCount.set(0);
+        rxAccessLock.set(false);
+    }
+
+
+    //END OF COUNTER OPERATIONS
+
     public static void Stay_Awake(){
         powerManager = (PowerManager) mActivity.getSystemService(Context.POWER_SERVICE);
         powerGrabber = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
@@ -152,9 +217,7 @@ public class MadDirectLayer extends BroadcastReceiver {
     private static class RecvProcess implements Runnable {   //constant retrieval process
         //String data;
         private byte[] recvItem;
-
         DatagramSocket serverSocket;
-
         @Override
         public void run (){
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -172,6 +235,10 @@ public class MadDirectLayer extends BroadcastReceiver {
                     if (recvItem != null) {
                         mCont.update_rx(packet);
                         recvItem = packet.getData();
+                        rxAccessLock.set(true); //lock the resource
+                        packetRxCount.incrementAndGet();
+                        byteRxCount.getAndAdd(packet.getData().length);
+                        rxAccessLock.set(false); //unlock the resource
                         //Log.d("Receive", (new String(recvItem)).toString());
                         //Log.d("Rx Buffer Size Updated", "New Size: " + mCont.packet_count());
                     }
@@ -209,6 +276,11 @@ public class MadDirectLayer extends BroadcastReceiver {
                     DatagramPacket packet = mCont.next_txitem();
                     output = packet.getData();
                     outSocket.send(packet);
+                    sentAccessLock.set(true); //lock the resource
+                    packetSentCount.incrementAndGet();
+                    byteSentCount.getAndAdd(packet.getData().length);
+                    rxAccessLock.set(false); //unlock the resource
+
                     //Log.d("BroadcastThread", "Packet sent");
                 }
 
@@ -259,7 +331,6 @@ public class MadDirectLayer extends BroadcastReceiver {
         InetAddress addr = InetAddress.getByName("192.168.49.255");
         return addr;
     }*/
-
     private static String getDottedDecimalIP(byte[] ipAddr) {
         //convert to dotted decimal notation:
         String ipAddrStr = "";

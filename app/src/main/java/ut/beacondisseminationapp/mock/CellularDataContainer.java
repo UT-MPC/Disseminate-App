@@ -1,10 +1,13 @@
 package ut.beacondisseminationapp.mock;
 
+import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import ut.beacondisseminationapp.Container;
 import ut.beacondisseminationapp.common.Chunk;
+import ut.beacondisseminationapp.common.Utility;
 
 /**
  * Created by Venkat on 11/29/14.
@@ -20,8 +23,10 @@ public class CellularDataContainer {
 
     HashMap<Integer, Integer> filledValues;
     Random indexFinder;
+    Container RXFIFO;
 
-    public CellularDataContainer(ArrayList<Chunk> serverContent, int dir){
+    public CellularDataContainer(ArrayList<Chunk> serverContent, int dir, Container handleVar){
+        RXFIFO = handleVar;
         serverData = serverContent;
         if(dir == 0){
             RxIndex = TxIndex = 0;
@@ -50,6 +55,11 @@ public class CellularDataContainer {
         if(TxIndex == serverData.size()){
             return false; //transfer failed since the server has no more new data
         }
+        // RXFIFO.add(serverData.get(TxIndex)); //Idea behind next few lines...
+        byte[] chunkBuf = Utility.serialize(serverData.get(TxIndex), Utility.BUF_SIZE);
+        DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
+        RXFIFO.update_rx(chunkPacket);
+        //End of logic for updating rx fifo
         downloadedData.add(serverData.get(TxIndex));
         TxIndex++;
         RxIndex++;
@@ -59,6 +69,11 @@ public class CellularDataContainer {
         if(TxIndex == -1){
             return false; //out of data to download
         }
+        //Logic for updating RXFIFO
+        byte[] chunkBuf = Utility.serialize(serverData.get(TxIndex), Utility.BUF_SIZE);
+        DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
+        RXFIFO.update_rx(chunkPacket);
+        //End of logic
         downloadedData.add(serverData.get(TxIndex));
         TxIndex--;
         RxIndex++;
@@ -69,6 +84,11 @@ public class CellularDataContainer {
         if(itemsDownloaded == serverData.size()){
             return false; //transfer failed since the server has no more new data
         }
+        //Logic for updating RXFIFO
+        byte[] chunkBuf = Utility.serialize(serverData.get(TxIndex), Utility.BUF_SIZE);
+        DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
+        RXFIFO.update_rx(chunkPacket);
+        //End of logic
         downloadedData.set(RxIndex, serverData.get(TxIndex));
         itemsDownloaded++;
         filledValues.put(TxIndex, TxIndex);

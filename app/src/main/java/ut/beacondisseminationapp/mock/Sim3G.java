@@ -12,36 +12,38 @@ import java.util.TimerTask;
 
 public class Sim3G {
 
-    private static int speedBps = 0;
-    private static int downloadType = 0;
-    private static Timer taskSch;
-    private static boolean completed = false;
-    private static CellularDataContainer datacontain;
-    private static int TxPointer = 0; //pointer for the serverData
-    private static int RxPointer = 0; //pointer for the downloadedData
+    private int speedBps = 0;
+    private int downloadType = 0;
+    private Timer taskSch;
+    private boolean completed = false;
+    private CellularDataContainer datacontain;
+    private int TxPointer = 0; //pointer for the serverData
+    private int RxPointer = 0; //pointer for the downloadedData
 
-    private static int bytecounter = 0; //variable used by timer thread to see byte speed
+    private int bytecounter = 0; //variable used by timer thread to see byte speed
 
-    public static void init(int bytesPerSecond, int type, CellularDataContainer cellData){
+
+    public Sim3G(int bytesPerSecond, int type, CellularDataContainer cellData){
         //DownloadSimulator myTask = new DownloadSimulator();
         taskSch = new Timer();
         speedBps = bytesPerSecond;
         datacontain = cellData;
         downloadType = (type)%3; //accepts only 0,1,2 for ftb, btf, and random data transfer
         completed = false;
+        //rxFIFOHandle=rxHandle;
     }
 
-    public static void startDownload() {
+    public void startDownload() {
         //taskSch.schedule(new DownloadSimulator(), 10); //MAX SPEED OF 100 kBps
         int bytesOfChunk = datacontain.bytesInNextChunk();
         float interruptTime = bytesOfChunk/speedBps;   //how many seconds for the next chunk
         int intTime = (int)(interruptTime*1000);
         taskSch.schedule(new DownloadSimulator(), intTime);
     }
-    public static boolean downloadStatus() {   //returns boolean if the download has finished or not.
+    public boolean downloadStatus() {   //returns boolean if the download has finished or not.
         return completed;
     }
-    static class DownloadSimulator extends TimerTask {
+    class DownloadSimulator extends TimerTask {
         public void run() {
 
             if(downloadType==0) {  //forward to back download

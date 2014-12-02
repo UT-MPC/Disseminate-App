@@ -1,14 +1,13 @@
 package ut.beacondisseminationapp;
 
 import android.app.Activity;
-import android.app.FragmentManager;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
@@ -18,16 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
+import android.widget.EditText;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.Stack;
 
 import ut.beacondisseminationapp.common.Chunk;
@@ -49,6 +45,8 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     double longitude;
     private SharedPreferences mPrefs;
     public static String selectedItem = null;
+
+    public static int dataSpeed = 10; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -293,6 +291,26 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("3G Data Rates");
+            alert.setMessage("Set 3G Data Rates: ");
+            final EditText input = new EditText(this);
+            alert.setView(input);
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    String value = input.getText().toString();
+                    value = value.replaceAll( "[^\\d]", "" ); //remove non numeric characters
+                    dataSpeed = Integer.valueOf(value);
+                }
+            });
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // Canceled.
+                }
+            });
+
+            alert.show();
             return true;
         }
         return super.onOptionsItemSelected(item);

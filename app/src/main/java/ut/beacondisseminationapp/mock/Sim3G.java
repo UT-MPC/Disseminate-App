@@ -5,8 +5,9 @@ import java.util.TimerTask;
 
 /**
  * Created by Venkat on 11/26/14.
- * Static class that simulates a 3G downloader
+ * Class that simulates a 3G downloader
  * Uncompleted version
+ * Needs the CellularDataContainer companion class
  */
 
 

@@ -61,7 +61,7 @@ public class Sim3G {
                     taskSch.cancel();
                 }
             }
-            else {
+            if(downloadType == 2) {
                 boolean complete = datacontain.nextRandDownload();
                 if(complete == false) {
                     completed = true;

@@ -28,6 +28,7 @@ public class CellularDataContainer {
     public CellularDataContainer(ArrayList<Chunk> serverContent, int dir, Container handleVar){
         RXFIFO = handleVar;
         serverData = serverContent;
+        indexFinder = new Random();
         if(dir == 0){
             RxIndex = TxIndex = 0;
         }
@@ -41,7 +42,7 @@ public class CellularDataContainer {
                 downloadedData.add(null);
             }
 
-            RxIndex = TxIndex = indexFinder.nextInt()%serverData.size();  //find the next index to "download"
+            RxIndex = TxIndex = Math.abs(indexFinder.nextInt()%serverData.size());  //find the next index to "download"
             itemsDownloaded = 0;
         }
 
@@ -93,7 +94,7 @@ public class CellularDataContainer {
         itemsDownloaded++;
         filledValues.put(TxIndex, TxIndex);
         while(filledValues.containsKey(TxIndex)){
-            TxIndex=RxIndex=indexFinder.nextInt()%serverData.size();
+            TxIndex=RxIndex=Math.abs(indexFinder.nextInt()%serverData.size());
         }
         return true;
 

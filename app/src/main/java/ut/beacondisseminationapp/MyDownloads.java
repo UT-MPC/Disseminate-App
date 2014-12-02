@@ -53,6 +53,12 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     HashMap<String, Boolean> itemToDownload = new HashMap<String, Boolean>();
     HashMap<String, String> itemToImageName = new HashMap<String, String>();
     HashMap<String, ArrayList<Chunk>> itemToChunks = new HashMap<String, ArrayList<Chunk>>();
+
+    //HashMap for time for each item
+    HashMap<String, TimeKeeper> itemTimeKeepers = new HashMap<String, TimeKeeper>();
+    HashMap<String, Long> itemTime = new HashMap<String, Long>();
+    //End
+
     //private int buttonsStackId = -1;
     //private int gridStackId = -1;
 
@@ -341,6 +347,11 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     @Override
     public void itemComplete(String itemId, ArrayList<Chunk> contents) {
+       if(itemTimeKeepers.get(itemId)!=null){
+           itemTimeKeepers.get(itemId).stop();
+           long timeTaken = itemTimeKeepers.get(itemId).checkTime();
+           itemTime.put(itemId, timeTaken);
+       }
         //setTitle("Done!");
         byte[] imageContents = chunksToByteArray(contents);
 
@@ -353,6 +364,15 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     @Override
     public void chunkComplete(String itemId, Chunk completedChunk) {
+        //update the item time if it's the first time created.
+        if(itemTimeKeepers.get(itemId) == null){  //if there is no stopwatch object for this item, then create a new one
+            itemTimeKeepers.put(itemId, new TimeKeeper());
+            itemTimeKeepers.get(itemId).start();  //start this since this is the first time the item chunk has been retrieved.
+        }
+
+
+
+        //
         ArrayList<String> urls = itemToSquares.get(itemId);
         if (urls == null) {
             return;

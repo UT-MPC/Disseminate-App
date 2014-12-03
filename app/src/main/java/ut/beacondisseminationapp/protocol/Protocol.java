@@ -172,9 +172,10 @@ public class Protocol {
             if (selectedChunk == null) {
                 Log.d("asdf", "sc is null");
             }
-
-            Log.d("randomAlgorithm", "Potential chunks found: "+ uniquenessMap.size() + " >>> ( "
-                    + selectedChunk.itemId + ", " + selectedChunk.chunkId + " )" );
+            if (selectedChunk != null) {
+                Log.d("randomAlgorithm", "Potential chunks found: " + uniquenessMap.size() + " >>> ( "
+                        + selectedChunk.itemId + ", " + selectedChunk.chunkId + " )");
+            }
         } else {
             selectedChunk = null;
         }

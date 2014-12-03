@@ -53,9 +53,7 @@ public class CellularDataContainer {
 
     }
     public boolean forwardDownload(){
-        if(TxIndex == serverData.size()){
-            return false; //transfer failed since the server has no more new data
-        }
+
         // RXFIFO.add(serverData.get(TxIndex)); //Idea behind next few lines...
         byte[] chunkBuf = Utility.serialize(serverData.get(TxIndex), Utility.BUF_SIZE);
         DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
@@ -64,12 +62,13 @@ public class CellularDataContainer {
         downloadedData.add(serverData.get(TxIndex));
         TxIndex++;
         RxIndex++;
+        if(TxIndex == serverData.size()){
+            return false; //transfer failed since the server has no more new data
+        }
         return true; //transfer is successful.
     }
     public boolean backwardDownload(){
-        if(TxIndex == -1){
-            return false; //out of data to download
-        }
+
         //Logic for updating RXFIFO
         byte[] chunkBuf = Utility.serialize(serverData.get(TxIndex), Utility.BUF_SIZE);
         DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
@@ -78,11 +77,14 @@ public class CellularDataContainer {
         downloadedData.add(serverData.get(TxIndex));
         TxIndex--;
         RxIndex++;
+        if(TxIndex == -1){
+            return false; //out of data to download
+        }
         return true; //successful download
     }
 
     public boolean nextRandDownload(){
-        if(itemsDownloaded == serverData.size()){
+        if(itemsDownloaded == serverData.size()-1){
             return false; //transfer failed since the server has no more new data
         }
         //Logic for updating RXFIFO

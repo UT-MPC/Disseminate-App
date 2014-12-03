@@ -6,7 +6,7 @@ import java.util.TimerTask;
 /**
  * Created by Venkat on 11/26/14.
  * Class that simulates a 3G downloader
- * Uncompleted version
+ * Completed and tested version
  * Needs the CellularDataContainer companion class
  */
 
@@ -68,7 +68,9 @@ public class Sim3G {
                     taskSch.cancel();
                 }
             }
-
+            if(completed){
+                return;
+            }
             //set the next timer interval.
             int bytesOfChunk = datacontain.bytesInNextChunk();
             float interruptTime = bytesOfChunk/speedBps;   //how many seconds for the next chunk

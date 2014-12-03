@@ -83,7 +83,7 @@ public class MetricWriter {
                 writeMech.close();
             }
             catch(Exception e){
-                throw new RuntimeException("Error writing to disc.");
+                throw new RuntimeException("Disc write error.");
             }
         }
 

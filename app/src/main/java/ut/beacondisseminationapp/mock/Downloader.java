@@ -1,3 +1,4 @@
+/*
 package ut.beacondisseminationapp.common;
 
 import java.util.ArrayList;
@@ -5,52 +6,69 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+*/
 /**
 * Downloader
 *
 *Rafi Rashid
-*/
+*//*
+
 public class Downloader {
-	public Timer timer; timer
+	public Timer timer; //timer
 	public long datarate; //in bits per second
-	public int downloadStrategy; 0,1,2
+	public int downloadStrategy;// 0,1,2
 	public ArrayList<Chunk> masterFile;
 	public ArrayList<Chunk> downloadedFile;
-	/*variables for moving data*/
+	*/
+/*variables for moving data*//*
+
 	public int current_chunk; //keeps track of how much to move in a second
 	public int new_chunk; //moves until moved enough for 1 second
 	public long length; //length of the arraylist
-	/*variables for random movement*/
+	*/
+/*variables for random movement*//*
+
 	public Random rand = new Random();
 	public int val;
-	public HashMap<int,int> check;
-	public HashMap<int,int> current;
-	/*constructor*/
-	public Downloader(long datarate, int downloadStrategy, ArrayList<Chunk> masterFile){
-		this.datarate = datarate;
-		this.downloadStrategy = downloadStrategy;
-		this.masterFile = masterFile;
-	/*datarate setter*/
+	public HashMap<Integer,Integer> check;
+	public HashMap<Integer,Integer> current;
+	*/
+/*constructor*//*
+
+	public Downloader(long datarate, int downloadStrategy, ArrayList<Chunk> masterFile) {
+        this.datarate = datarate;
+        this.downloadStrategy = downloadStrategy;
+        this.masterFile = masterFile;
+    }
+	*/
+/*datarate setter*//*
+
 	public void set_datarate(long datarate){
 		this.datarate = datarate;
 	}
-	/*strategy setter*/
+	*/
+/*strategy setter*//*
+
 	public void set_strategy(int downloadStrategy){
 		this.downloadStrategy = downloadStrategy;
 	}
-	/*datarate getter*/
-	public long get_datarate(void){
+	*/
+/*datarate getter*//*
+
+	public long get_datarate(){
 		return this.datarate;
 	}
-	/*strategy getter*/
-	public int get_strategy(void){
+	*/
+/*strategy getter*//*
+
+	public int get_strategy(){
 		return this.downloadStrategy;
 	}
 	//downloadtask for strategy 0
 	class DownloadTask0 extends TimerTask {
 		public void run(){
 			while (new_chunk < current_chunk && new_chunk < length){ //move bits to move in one second
-				downloadedFile.get(new_chunk) = masterFile.get(new_chunk);
+				//downloadedFile.get(new_chunk) = masterFile.get(new_chunk);
 				new_chunk++;
 			}
 			timer.cancel(); //terminate timer thread
@@ -62,7 +80,7 @@ public class Downloader {
 		public void run(){
 			while (new_chunk > current_chunk && new_chunk > 0){
 				new_chunk--;
-				downloadedFile.get(new_chunk) = masterFile.get(new_chunk);
+				//downloadedFile.get(new_chunk) = masterFile.get(new_chunk);
 			}
 			timer.cancel();
 		}
@@ -71,20 +89,22 @@ public class Downloader {
 	//download task for strategy 2
 	class DownloadTask2 extends TimerTask {
 		public void run(){
-			while (check != current){ while check and current are not the same
+			while (check != current){ //while check and current are not the same
 				while(check.containsValue(val)&&!current.containsValue(val)){
-				finding a val that is not in check and is in current
-					val = rand.nextInt(length);
+				//finding a val that is not in check and is in current
+					//val = rand.nextInt(length);
 				}
-				downloadedFile.get(val) = masterFile.get(val); move
-				current.remove(val);remove from current
+				//downloadedFile.get(val) = masterFile.get(val); //move
+				current.remove(val);//remove from current
 
 			}
 			timer.cancel();
 		}
 	}
-	/*download method*/
-	public void	download(void){
+	*/
+/*download method*//*
+
+	public void	download(){
 		timer = new Timer(); //initalize timer
 		int bit_size = 0;// counter of how many bits to move in a second
 		length = masterFile.size(); //set length to length of the masterfile
@@ -101,7 +121,7 @@ public class Downloader {
 				bit_size = 0;
 				timer.schedule(new DownloadTask0(),1000);
 			}
-		}else if(downloadStrategy == 1){ from back to front
+		}else if(downloadStrategy == 1){ //from back to front
 			current_chunk = length;
 			new_chunk = length;
 			while (new_chunk > 0){
@@ -125,10 +145,10 @@ public class Downloader {
 					}
 				}
 				//all values moved in ~second have been taken out of check
-				bit_size = 0;reset bit counter size
+				bit_size = 0;//reset bit counter size
 				timer.schedule(new DownloadTask2(),1000);
 			}
 		}
 	}
 }
-=
+*/

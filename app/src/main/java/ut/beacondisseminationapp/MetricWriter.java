@@ -1,15 +1,11 @@
 package ut.beacondisseminationapp;
 
-import android.graphics.Bitmap;
 import android.os.Environment;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.io.*;
 
 
 /**
@@ -42,8 +38,8 @@ public class MetricWriter {
     public void flushToDisk(String experimentName){   //deletes all temporary data and puts it into the data file
         File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/"
                 + Environment.DIRECTORY_DOCUMENTS + "/ExperimentData");
-        if(!fileToWrite.exists()){
-            boolean successDescription = fileToWrite.mkdirs();
+        if(!folderToWrite.exists()){
+            boolean successDescription = folderToWrite.mkdirs();
             if (successDescription) {
 
             } else {

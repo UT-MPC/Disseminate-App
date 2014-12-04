@@ -28,6 +28,8 @@ import java.util.Stack;
 
 import ut.beacondisseminationapp.common.Chunk;
 import ut.beacondisseminationapp.common.Utility;
+import ut.beacondisseminationapp.mock.CellularDataContainer;
+import ut.beacondisseminationapp.mock.Sim3G;
 import ut.beacondisseminationapp.protocol.Protocol;
 
 public class MyDownloads extends Activity implements ImageGridFragment.OnImageGridListener,
@@ -46,6 +48,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     private SharedPreferences mPrefs;
     public static String selectedItem = null;
 
+    Container txrxfifo;
     public static int dataSpeed = 10; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
@@ -53,7 +56,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     HashMap<String, Boolean> itemToDownload = new HashMap<String, Boolean>();
     HashMap<String, String> itemToImageName = new HashMap<String, String>();
     HashMap<String, ArrayList<Chunk>> itemToChunks = new HashMap<String, ArrayList<Chunk>>();
-
+    HashMap<String, Sim3G> itemTo3GDownloader = new HashMap<String, Sim3G>();
     //HashMap for time for each item
     HashMap<String, TimeKeeper> itemTimeKeepers = new HashMap<String, TimeKeeper>();
     HashMap<String, Long> itemTime = new HashMap<String, Long>();
@@ -125,7 +128,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         BroadcastReceiver mReceiver;
         IntentFilter mIntentFilter;
         WifiManager nManager;
-        Container txrxfifo = new Container();
+        txrxfifo = new Container();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             //userId = extras.getString(Constants.USER_ID_KEY);
@@ -419,8 +422,12 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         buttonsContainer.setVisibility(View.INVISIBLE);
         if (selectedItem != null) {
             //Protocol.populateDummyItem(selectedItem);
-            Protocol.populateItem(selectedItem, itemToChunks.get(selectedItem));
-
+            //Protocol.populateItem(selectedItem, itemToChunks.get(selectedItem));
+            if (itemTo3GDownloader.get(selectedItem) == null) {
+                itemTo3GDownloader.put(selectedItem,
+                        new Sim3G(dataSpeed, 2, new CellularDataContainer(itemToChunks.get(selectedItem), 2, txrxfifo)));
+                itemTo3GDownloader.get(selectedItem).startDownload();
+            }
             /*ArrayList<String> urls = itemToSquares.get(selectedItem);
             if (urls != null) {
                 for (int i=0; i<Utility.NUM_CHUNKS; ++i) {

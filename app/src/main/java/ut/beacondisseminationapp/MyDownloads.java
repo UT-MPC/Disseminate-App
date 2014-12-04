@@ -49,8 +49,10 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     public static String selectedItem = null;
 
     Container txrxfifo;
-    
-    public static int dataSpeed = 1000; //default is 10 bytes per second.
+
+    MadDirectLayer mReceiver;
+
+    public static int dataSpeed = 10000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -127,7 +129,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
         WifiP2pManager mManager;   //the required infrastructure for the madapp app
         WifiP2pManager.Channel mChannel;
-        BroadcastReceiver mReceiver;
+
         IntentFilter mIntentFilter;
         WifiManager nManager;
         txrxfifo = new Container();
@@ -352,14 +354,16 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     @Override
     public void itemComplete(String itemId, ArrayList<Chunk> contents) {
+        Log.d("File", "onItemComplete");
        if(itemTimeKeepers.get(itemId)!=null){
            itemTimeKeepers.get(itemId).stop();
            long timeTaken = itemTimeKeepers.get(itemId).checkTime();
            itemTime.put(itemId, timeTaken);
-           itemMetricWriters.get(itemId).updateMetrics("Chunks sent", MadDirectLayer.getPacketSent());
-           itemMetricWriters.get(itemId).updateMetrics("Chunks recv", MadDirectLayer.getPacketsRx());
+           itemMetricWriters.get(itemId).updateMetrics("Chunks sent", mReceiver.getPacketSent());
+           itemMetricWriters.get(itemId).updateMetrics("Chunks recv", mReceiver.getPacketsRx());
            itemMetricWriters.get(itemId).updateMetrics("Time started", itemTimeKeepers.get(itemId).getStartTime());
            itemMetricWriters.get(itemId).updateMetrics("Time ended", itemTimeKeepers.get(itemId).getEndTime());
+           Log.d("File", "Write to Disk");
            itemMetricWriters.get(itemId).flushToDisk(itemId);
 
        }

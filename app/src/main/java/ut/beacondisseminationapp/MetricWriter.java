@@ -36,8 +36,9 @@ public class MetricWriter {
         itemMetrics.put(name, value);
     }
     public void flushToDisk(String experimentName){   //deletes all temporary data and puts it into the data file
-        File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/"
-                + Environment.DIRECTORY_DOCUMENTS + "/ExperimentData");
+        //File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/"
+        //        + Environment.DIRECTORY_PICTURES + "/ExperimentData");
+        File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/ExperimentData");
         if(!folderToWrite.exists()){
             boolean successDescription = folderToWrite.mkdirs();
             if (successDescription) {
@@ -46,9 +47,11 @@ public class MetricWriter {
                 throw new RuntimeException("File Error in writing new folder");  //Privileges not allowed
             }
         }
-        File fileToWrite = new File(
-                Environment.getExternalStorageDirectory() + "/"
-                        + Environment.DIRECTORY_DOCUMENTS + "/ExperimentData",
+//        File fileToWrite = new File(
+//                Environment.getExternalStorageDirectory() + "/"
+//                        + Environment.DIRECTORY_DOCUMENTS + "/ExperimentData",
+//                name);
+                File fileToWrite = new File(Environment.getExternalStorageDirectory() + "/ExperimentData",
                 name);
 
         String dataToDisk = experimentName;

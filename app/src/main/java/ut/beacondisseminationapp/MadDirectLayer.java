@@ -139,19 +139,19 @@ public class MadDirectLayer extends BroadcastReceiver {
 
     //Counter operations
     public static long getPacketSent(){
-        while(sentAccessLock.get()==true){}  //spin while resource is locked.
+        //while(sentAccessLock.get()==true){}  //spin while resource is locked.
         return packetSentCount.get();
     }
     public static long getBytesSent(){
-        while(sentAccessLock.get()==true){}  //spin while resource is locked.
+        //while(sentAccessLock.get()==true){}  //spin while resource is locked.
         return byteSentCount.get();
     }
     public static long getPacketsRx(){
-        while(rxAccessLock.get()==true){}  //spin while resource is locked.
+        //while(rxAccessLock.get()==true){}  //spin while resource is locked.
         return packetRxCount.get();
     }
     public static long getBytesRx(){
-        while(rxAccessLock.get()==true){}  //spin while resource is locked.
+       // while(rxAccessLock.get()==true){}  //spin while resource is locked.
         return byteSentCount.get();
     }
 

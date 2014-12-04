@@ -72,7 +72,12 @@ public class MadDirectLayer extends BroadcastReceiver {
 
     }
 
-
+    public static void clearMetrics(){
+        packetSentCount.set(0);
+        packetRxCount.set(0);
+        byteRxCount.set(0);
+        byteSentCount.set(0);
+    }
     public static Context getAppContext(){
         return mActivity;
     }

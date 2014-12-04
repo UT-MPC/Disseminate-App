@@ -38,7 +38,7 @@ public class MetricWriter {
     public void flushToDisk(String experimentName){   //deletes all temporary data and puts it into the data file
         //File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/"
         //        + Environment.DIRECTORY_PICTURES + "/ExperimentData");
-        File folderToWrite = new File(Environment.getExternalStorageDirectory() + "/ExperimentData");
+        File folderToWrite = new File(Environment.getExternalStorageDirectory() +"/"+Environment.DIRECTORY_PICTURES+ "/ExperimentData");
         if(!folderToWrite.exists()){
             boolean successDescription = folderToWrite.mkdirs();
             if (successDescription) {
@@ -51,7 +51,7 @@ public class MetricWriter {
 //                Environment.getExternalStorageDirectory() + "/"
 //                        + Environment.DIRECTORY_DOCUMENTS + "/ExperimentData",
 //                name);
-                File fileToWrite = new File(Environment.getExternalStorageDirectory() + "/ExperimentData",
+                File fileToWrite = new File(Environment.getExternalStorageDirectory() +"/"+Environment.DIRECTORY_PICTURES+ "/ExperimentData",
                 name);
 
         String dataToDisk = experimentName;

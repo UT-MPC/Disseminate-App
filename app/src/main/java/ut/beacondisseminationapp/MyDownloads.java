@@ -2,7 +2,6 @@ package ut.beacondisseminationapp;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentFilter;
@@ -52,7 +51,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     MadDirectLayer mReceiver;
 
-    public static int dataSpeed = 10000; //default is 10 bytes per second.
+    public static int dataSpeed = 50000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -363,6 +362,11 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
            itemMetricWriters.get(itemId).updateMetrics("Chunks recv", mReceiver.getPacketsRx());
            itemMetricWriters.get(itemId).updateMetrics("Time started", itemTimeKeepers.get(itemId).getStartTime());
            itemMetricWriters.get(itemId).updateMetrics("Time ended", itemTimeKeepers.get(itemId).getEndTime());
+           itemMetricWriters.get(itemId).updateMetrics("Time to Completion", (long)(itemTimeKeepers.get(itemId).checkTime()/itemTimeKeepers.get(itemId).NANOS_PER_SEC));
+           itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
+           itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
+
+
            Log.d("File", "Write to Disk");
            itemMetricWriters.get(itemId).flushToDisk(itemId);
 
@@ -425,7 +429,39 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         }
         return result;
     }
+    //ERASE THIS CODE LATER
+    public void AutomateTesting(){
+        //Simulate the first download
 
+
+
+
+
+
+
+
+    }
+
+    public void automateHandler(String insideSelectedItem){
+        Log.d(TAG, "downloadButtonHandler");
+        if (insideSelectedItem != null) {
+            //Protocol.populateDummyItem(selectedItem);
+            //Protocol.populateItem(selectedItem, itemToChunks.get(selectedItem));
+            if (itemTo3GDownloader.get(insideSelectedItem) == null) {
+                itemTo3GDownloader.put(insideSelectedItem,
+                        new Sim3G(dataSpeed, 2, new CellularDataContainer(itemToChunks.get(insideSelectedItem), 2, txrxfifo)));
+                itemTo3GDownloader.get(insideSelectedItem).startDownload();
+            }
+
+
+            itemToDownload.put(insideSelectedItem, true);
+
+
+            insideSelectedItem = null;
+        }
+    }
+
+    //END ERASE ZONE
     @Override
     public void downloadButtonHandler() {
         Log.d(TAG, "downloadButtonHandler");

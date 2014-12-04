@@ -49,7 +49,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     public static String selectedItem = null;
 
     Container txrxfifo;
-    public static int dataSpeed = 10; //default is 10 bytes per second.
+    public static int dataSpeed = 2000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -59,6 +59,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     HashMap<String, Sim3G> itemTo3GDownloader = new HashMap<String, Sim3G>();
     //HashMap for time for each item
     HashMap<String, TimeKeeper> itemTimeKeepers = new HashMap<String, TimeKeeper>();
+    HashMap<String, MetricWriter> itemMetricWriters = new HashMap<String, MetricWriter>();
     HashMap<String, Long> itemTime = new HashMap<String, Long>();
     //End
 
@@ -302,7 +303,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         if (id == R.id.action_settings) {
             AlertDialog.Builder alert = new AlertDialog.Builder(this);
             alert.setTitle("3G Data Rates");
-            alert.setMessage("Set 3G Data Rates: ");
+            alert.setMessage("Set 3G Data Rates (bytes per second):");
             final EditText input = new EditText(this);
             alert.setView(input);
             alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -354,6 +355,12 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
            itemTimeKeepers.get(itemId).stop();
            long timeTaken = itemTimeKeepers.get(itemId).checkTime();
            itemTime.put(itemId, timeTaken);
+           itemMetricWriters.get(itemId).updateMetrics("Chunks sent", MadDirectLayer.getPacketSent());
+           itemMetricWriters.get(itemId).updateMetrics("Chunks recv", MadDirectLayer.getPacketsRx());
+           itemMetricWriters.get(itemId).updateMetrics("Time started", itemTimeKeepers.get(itemId).getStartTime());
+           itemMetricWriters.get(itemId).updateMetrics("Time ended", itemTimeKeepers.get(itemId).getEndTime());
+           itemMetricWriters.get(itemId).flushToDisk(itemId);
+
        }
         //setTitle("Done!");
         byte[] imageContents = chunksToByteArray(contents);
@@ -371,6 +378,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
         if(itemTimeKeepers.get(itemId) == null){  //if there is no stopwatch object for this item, then create a new one
             itemTimeKeepers.put(itemId, new TimeKeeper());
             itemTimeKeepers.get(itemId).start();  //start this since this is the first time the item chunk has been retrieved.
+            itemMetricWriters.put(itemId, new MetricWriter());
         }
 
 

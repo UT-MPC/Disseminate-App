@@ -73,7 +73,7 @@ public class Sim3G {
             }
             //set the next timer interval.
             int bytesOfChunk = datacontain.bytesInNextChunk();
-            float interruptTime = bytesOfChunk/speedBps;   //how many seconds for the next chunk
+            float interruptTime = ((float)bytesOfChunk)/((float)speedBps);   //how many seconds for the next chunk
             int intTime = (int)(interruptTime*1000);
             taskSch.schedule(new DownloadSimulator(), intTime);
 

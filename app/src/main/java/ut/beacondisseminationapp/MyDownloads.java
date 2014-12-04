@@ -49,7 +49,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
     public static String selectedItem = null;
 
     Container txrxfifo;
-    public static int dataSpeed = 10; //default is 10 bytes per second.
+    public static int dataSpeed = 1000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -357,7 +357,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
        }
         //setTitle("Done!");
         byte[] imageContents = chunksToByteArray(contents);
-
+        Log.d("Image", "Displaying image!");
         ImageFragment iFragment = ImageFragment.newInstance(imageContents);
         getFragmentManager().beginTransaction()
                 .replace(itemToContainer.get(itemId), iFragment)
@@ -437,13 +437,13 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
             }*/
 
             itemToDownload.put(selectedItem, true);
-            byte[] imageContents = chunksToByteArray(itemToChunks.get(selectedItem));
+            /*byte[] imageContents = chunksToByteArray(itemToChunks.get(selectedItem));
 
             ImageFragment iFragment = ImageFragment.newInstance(imageContents);
             getFragmentManager().beginTransaction()
                     .replace(itemToContainer.get(selectedItem), iFragment)
                             //.addToBackStack(null)
-                    .commit();
+                    .commit();*/
 
             /*ImageGridFragment newIGFragment = ImageGridFragment.newInstance(selectedItem, itemToDownload.get(selectedItem), null, urls, null);
             getFragmentManager().beginTransaction()

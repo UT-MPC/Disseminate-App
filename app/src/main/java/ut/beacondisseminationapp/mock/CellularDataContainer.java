@@ -84,7 +84,7 @@ public class CellularDataContainer {
     }
 
     public boolean nextRandDownload(){
-        if(itemsDownloaded == serverData.size()-1){
+        if(itemsDownloaded == serverData.size()){
             return false; //transfer failed since the server has no more new data
         }
         //Logic for updating RXFIFO

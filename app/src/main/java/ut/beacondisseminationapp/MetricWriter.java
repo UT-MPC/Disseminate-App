@@ -13,7 +13,7 @@ import java.util.HashMap;
  */
 public class MetricWriter {
     String name;
-    HashMap<String, Integer> itemMetrics = new HashMap<String, Integer>();
+    HashMap<String, Long> itemMetrics = new HashMap<String, Long>();
 
     public MetricWriter(){
         //Use this to find the name of the file automatically
@@ -27,7 +27,7 @@ public class MetricWriter {
     public void changeName(String itemName){
         this.name = itemName;
     }
-    public void updateMetrics(String name, Integer value){
+    public void updateMetrics(String name, Long value){
         if(itemMetrics.get(name)==null){
            itemMetrics.put(name, value);  //creates a new value
            return;

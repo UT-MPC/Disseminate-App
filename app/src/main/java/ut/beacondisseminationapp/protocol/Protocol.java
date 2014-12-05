@@ -42,6 +42,8 @@ public class Protocol {
     public static Thread packetProcessor;
     public static Thread packetBroadcaster;
 
+    public static ArrayList<Chunk> chunksSeen = new ArrayList<Chunk>();
+
     public static void populateItem(String itemId, ArrayList<Chunk> inChunks) {
         myBeacon.bvMap.put(itemId, new BitVector(-1L));
         Item newItem = new Item(itemId, Utility.NUM_CHUNKS);
@@ -142,11 +144,15 @@ public class Protocol {
                         if (intersection.testBit(i)) {
                             cntFound++;
                             Chunk potentialChunk = item.chunks.get(i);
-                            Double uniqueness = uniquenessMap.get(potentialChunk);
-                            if (uniqueness != null) {
-                                uniquenessMap.put(potentialChunk, uniqueness+1.0);
+                            if (chunksSeen.contains(potentialChunk)) {
+
                             } else {
-                                uniquenessMap.put(potentialChunk, 1.0);
+                                Double uniqueness = uniquenessMap.get(potentialChunk);
+                                if (uniqueness != null) {
+                                    uniquenessMap.put(potentialChunk, uniqueness+1.0);
+                                } else {
+                                    uniquenessMap.put(potentialChunk, 1.0);
+                                }
                             }
                         }
                     }
@@ -176,9 +182,11 @@ public class Protocol {
                 Log.d("randomAlgorithm", "Potential chunks found: " + uniquenessMap.size() + " >>> ( "
                         + selectedChunk.itemId + ", " + selectedChunk.chunkId + " )");
                 selectedChunk.currentBeacon = myBeacon;
+                chunksSeen.add(selectedChunk);
             }
         } else {
             selectedChunk = null;
+            chunksSeen.clear();
         }
         long end = System.currentTimeMillis();
         long elapsed = end - start;

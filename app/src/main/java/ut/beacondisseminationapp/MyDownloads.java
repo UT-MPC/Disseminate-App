@@ -327,6 +327,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
             alert.show();
             return true;
         }
+        String fileName="";
         if(id==R.id.action_startmetricwatch){
 
             for(String itemId: itemMetricWriters.keySet()) {
@@ -338,28 +339,29 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
                 itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
                 itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
                 itemMetricWriters.get(itemId).flushToDisk(itemId);
-
+                fileName=itemMetricWriters.get(itemId).name;
                 //show alert
-                AlertDialog.Builder alert = new AlertDialog.Builder(this);
-                alert.setTitle("Data written.");
-                alert.setMessage("Data has been written to SDCARD/PICTURES/EXPERIMENTDATA/"+itemMetricWriters.get(itemId).name);
 
-                alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-
-                        
-                    }
-                });
-
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // Canceled.
-                    }
-                });
-
-                alert.show();
-                return true;
             }
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Data written.");
+            alert.setMessage("Data has been written to "+fileName);
+
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+
+                }
+            });
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // Canceled.
+                }
+            });
+
+            alert.show();
+            return true;
 
         }
         return super.onOptionsItemSelected(item);

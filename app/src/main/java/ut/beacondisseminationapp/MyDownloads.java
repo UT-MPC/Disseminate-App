@@ -51,7 +51,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     MadDirectLayer mReceiver;
 
-    public static int dataSpeed = 10000; //default is 10 bytes per second.
+    public static int dataSpeed = 50000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -328,9 +328,9 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
             return true;
         }
         String fileName="";
-        boolean writeFailed=false;
-        if(id==R.id.action_startmetricwatch){
 
+        if(id==R.id.action_startmetricwatch){
+            boolean writeFailed=false;
             for(String itemId: itemMetricWriters.keySet()) {
                 itemMetricWriters.get(itemId).updateMetrics("Chunks sent", mReceiver.getPacketSent());
                 itemMetricWriters.get(itemId).updateMetrics("Chunks recv", mReceiver.getPacketsRx());
@@ -339,14 +339,15 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
                 itemMetricWriters.get(itemId).updateMetrics("Time to Completion", (long) (itemTimeKeepers.get(itemId).checkTime() / itemTimeKeepers.get(itemId).NANOS_PER_SEC));
                 itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
                 itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
-                if(!(!itemMetricWriters.get(itemId).equals(fileName) && !fileName.equals(""))) {
+                if(!(!itemMetricWriters.get(itemId).name.equals(fileName) && !fileName.equals(""))) {
+
                     itemMetricWriters.get(itemId).flushToDisk(itemId);
                 }
                 else{
                     writeFailed=true;
                     break;
                 }
-                fileName=itemMetricWriters.get(itemId).name;
+                fileName = itemMetricWriters.get(itemId).name;
                 //show alert
 
             }

@@ -327,6 +327,43 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
             alert.show();
             return true;
         }
+        String fileName="";
+        if(id==R.id.action_startmetricwatch){
+
+            for(String itemId: itemMetricWriters.keySet()) {
+                itemMetricWriters.get(itemId).updateMetrics("Chunks sent", mReceiver.getPacketSent());
+                itemMetricWriters.get(itemId).updateMetrics("Chunks recv", mReceiver.getPacketsRx());
+                itemMetricWriters.get(itemId).updateMetrics("Time started", itemTimeKeepers.get(itemId).getStartTime());
+                itemMetricWriters.get(itemId).updateMetrics("Time ended", itemTimeKeepers.get(itemId).getEndTime());
+                itemMetricWriters.get(itemId).updateMetrics("Time to Completion", (long) (itemTimeKeepers.get(itemId).checkTime() / itemTimeKeepers.get(itemId).NANOS_PER_SEC));
+                itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
+                itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
+                itemMetricWriters.get(itemId).flushToDisk(itemId);
+                fileName=itemMetricWriters.get(itemId).name;
+                //show alert
+
+            }
+            AlertDialog.Builder alert = new AlertDialog.Builder(this);
+            alert.setTitle("Data written.");
+            alert.setMessage("Data has been written to "+fileName);
+
+            alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+
+                }
+            });
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int whichButton) {
+                    // Canceled.
+                }
+            });
+
+            alert.show();
+            return true;
+
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -360,18 +397,10 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
            itemTimeKeepers.get(itemId).stop();
            long timeTaken = itemTimeKeepers.get(itemId).checkTime();
            itemTime.put(itemId, timeTaken);
-           itemMetricWriters.get(itemId).updateMetrics("Chunks sent", mReceiver.getPacketSent());
-           itemMetricWriters.get(itemId).updateMetrics("Chunks recv", mReceiver.getPacketsRx());
-           itemMetricWriters.get(itemId).updateMetrics("Time started", itemTimeKeepers.get(itemId).getStartTime());
-           itemMetricWriters.get(itemId).updateMetrics("Time ended", itemTimeKeepers.get(itemId).getEndTime());
-           itemMetricWriters.get(itemId).updateMetrics("Time to Completion", (long)(itemTimeKeepers.get(itemId).checkTime()/itemTimeKeepers.get(itemId).NANOS_PER_SEC));
-           itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
-           itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
+
           // itemMetricWriters.get(itemId).updateMetrics("DownloadSpeed", mReceiver.getBytesRx());
-
-
            Log.d("File", "Write to Disk");
-           itemMetricWriters.get(itemId).flushToDisk(itemId);
+
 
        }
         //setTitle("Done!");

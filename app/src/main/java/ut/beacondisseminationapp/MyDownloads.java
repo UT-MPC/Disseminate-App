@@ -51,7 +51,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
 
     MadDirectLayer mReceiver;
 
-    public static int dataSpeed = 50000; //default is 10 bytes per second.
+    public static int dataSpeed = 10000; //default is 10 bytes per second.
 
     HashMap<String, Integer> itemToContainer = new HashMap<String, Integer>();
     HashMap<String, ArrayList<String>> itemToSquares = new HashMap<String, ArrayList<String>>();
@@ -268,6 +268,8 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
             // would set arguments from intent here, but we don't have any
             getFragmentManager().beginTransaction().replace(R.id.download_buttons_container, dbFragment).commit();
         }
+        mReceiver.clearMetrics();
+
         //Thread spoofChunkThread = new Thread(new SpoofChunkReceive(null,null));
         //spoofChunkThread.start();
 
@@ -365,6 +367,7 @@ public class MyDownloads extends Activity implements ImageGridFragment.OnImageGr
            itemMetricWriters.get(itemId).updateMetrics("Time to Completion", (long)(itemTimeKeepers.get(itemId).checkTime()/itemTimeKeepers.get(itemId).NANOS_PER_SEC));
            itemMetricWriters.get(itemId).updateMetrics("Bytes Sent", mReceiver.getBytesSent());
            itemMetricWriters.get(itemId).updateMetrics("Bytes Recv", mReceiver.getBytesRx());
+          // itemMetricWriters.get(itemId).updateMetrics("DownloadSpeed", mReceiver.getBytesRx());
 
 
            Log.d("File", "Write to Disk");

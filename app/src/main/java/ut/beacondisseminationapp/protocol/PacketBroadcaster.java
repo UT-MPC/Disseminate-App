@@ -3,11 +3,8 @@ package ut.beacondisseminationapp.protocol;
 import android.util.Log;
 
 import java.net.DatagramPacket;
-import java.util.TimerTask;
 
-import ut.beacondisseminationapp.common.Beacon;
 import ut.beacondisseminationapp.common.Chunk;
-import ut.beacondisseminationapp.common.Packet;
 import ut.beacondisseminationapp.common.Utility;
 
 public class PacketBroadcaster implements Runnable {
@@ -25,6 +22,7 @@ public class PacketBroadcaster implements Runnable {
 
                     byte[] chunkBuf = Utility.serialize(chunkToSend, Utility.BUF_SIZE);
                     DatagramPacket chunkPacket = new DatagramPacket(chunkBuf, chunkBuf.length, Utility.broadcastAddr, Utility.RECEIVER_PORT);
+                    Log.d("Size of Chunk", Integer.toString(chunkBuf.length));
                     Log.d("PacketBroadcaster", "Broadcasting: ( " + chunkToSend.itemId + ", "
                             + chunkToSend.chunkId + " ) [ "+chunkBuf.length+" ]");
                     //Log.d("PacketBroadcaster", "Length of chunkPacket: " + chunkBuf.length);

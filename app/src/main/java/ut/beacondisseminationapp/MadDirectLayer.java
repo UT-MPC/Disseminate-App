@@ -157,7 +157,7 @@ public class MadDirectLayer extends BroadcastReceiver {
     }
     public static long getBytesRx(){
        // while(rxAccessLock.get()==true){}  //spin while resource is locked.
-        return byteSentCount.get();
+        return byteRxCount.get();
     }
 
     public static void resetAllMetrics(){
@@ -240,10 +240,15 @@ public class MadDirectLayer extends BroadcastReceiver {
                     if (recvItem != null) {
                         mCont.update_rx(packet);
                         recvItem = packet.getData();
-                        rxAccessLock.set(true); //lock the resource
-                        packetRxCount.incrementAndGet();
-                        byteRxCount.getAndAdd(packet.getData().length);
-                        rxAccessLock.set(false); //unlock the resource
+                        Log.d("Size Of Packet", Integer.toString(packet.getLength()));
+
+                        if(packet.getLength() > 900) {
+
+                            Log.d("Size Of Inside Chunk", Integer.toString(packet.getLength()));
+                            packetRxCount.incrementAndGet();
+                            byteRxCount.getAndAdd(packet.getLength());
+                        }
+
                         //Log.d("Receive", (new String(recvItem)).toString());
                         //Log.d("Rx Buffer Size Updated", "New Size: " + mCont.packet_count());
                     }
@@ -281,10 +286,11 @@ public class MadDirectLayer extends BroadcastReceiver {
                     DatagramPacket packet = mCont.next_txitem();
                     output = packet.getData();
                     outSocket.send(packet);
-                    sentAccessLock.set(true); //lock the resource
-                    packetSentCount.incrementAndGet();
-                    byteSentCount.getAndAdd(packet.getData().length);
-                    rxAccessLock.set(false); //unlock the resource
+                    if(packet.getLength() > 900) {
+                        packetSentCount.incrementAndGet();
+                        byteSentCount.getAndAdd(packet.getLength());
+                    }
+
 
                     //Log.d("BroadcastThread", "Packet sent");
                 }

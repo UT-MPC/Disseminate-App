@@ -1,9 +1,8 @@
 package ut.beacondisseminationapp.common;
 
-import java.io.Serializable;
-
 public class Chunk extends Packet {
-	
+	public Beacon currentBeacon;
+
 	public String itemId;
 	public int chunkId;
 	public int size;
@@ -17,6 +16,7 @@ public class Chunk extends Packet {
 		this.size = size;
 		this.data = new byte [size];
         this.identifier = Type.CHUNK;
+
 	}
 
     @Override

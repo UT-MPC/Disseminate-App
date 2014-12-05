@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ut.beacondisseminationapp.Container;
 import ut.beacondisseminationapp.common.Beacon;
@@ -175,6 +174,7 @@ public class Protocol {
             if (selectedChunk != null) {
                 Log.d("randomAlgorithm", "Potential chunks found: " + uniquenessMap.size() + " >>> ( "
                         + selectedChunk.itemId + ", " + selectedChunk.chunkId + " )");
+                selectedChunk.currentBeacon = myBeacon;
             }
         } else {
             selectedChunk = null;
@@ -187,6 +187,10 @@ public class Protocol {
     }
     
     public static void processChunk(Chunk newChunk) {
+        if(newChunk.currentBeacon!=null) {
+            processBeacon(newChunk.currentBeacon);
+            Log.d("Beacon Notif", "Current Beacon from chunk.");
+        }
         if (newChunk != null) {
             Item i = items.get(newChunk.itemId);
             //Log.d("ProcessChunk", "Processing new chunk...");

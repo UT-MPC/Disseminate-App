@@ -161,6 +161,7 @@ public class Protocol {
             }
         }
         Object[] potentialChunks = uniquenessMap.keySet().toArray();
+        Log.d("Potential Chunks", Integer.toString(potentialChunks.length));
         Chunk selectedChunk;
         if (potentialChunks != null && potentialChunks.length != 0) {
             selectedChunk = (Chunk) potentialChunks[rand.nextInt(potentialChunks.length)];
@@ -188,7 +189,7 @@ public class Protocol {
     
     public static void processChunk(Chunk newChunk) {
         if(newChunk.currentBeacon!=null) {
-            processBeacon(newChunk.currentBeacon);
+            processBeaconReduced(newChunk.currentBeacon);
             Log.d("Beacon Notif", "Current Beacon from chunk.");
         }
         if (newChunk != null) {
@@ -231,8 +232,20 @@ public class Protocol {
         }
         //TODO: might need to send subscription here
     }
-        
-    
+
+    public static void processBeaconReduced(Beacon newBeacon) {
+        //Log.d("ProcessBeacon", "Updating beacon map...");
+        if (newBeacon != null) {
+            if (!newBeacon.userId.equals(myId)) {
+                beacons.put(newBeacon.userId, newBeacon);
+                Log.d("ProcessBeacon", "Updated beacon for: " + newBeacon.userId);
+                //synchronized(selectMonitor) {
+                //    selectMonitor.notify();
+                //}
+            }
+        }
+    }
+
     public static void processBeacon(Beacon newBeacon) {
         //Log.d("ProcessBeacon", "Updating beacon map...");
         if (newBeacon != null) {

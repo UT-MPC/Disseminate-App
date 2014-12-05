@@ -14,7 +14,7 @@ import ut.beacondisseminationapp.common.Utility;
 public class PacketProcessor implements Runnable {
 	
 	public void run() {
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE);
 		//byte [] recvBuf = new byte[Utility.BUF_SIZE];
         while (!Thread.interrupted()) {
             //Log.d("PacketProcessor", "Requesting next packet...");

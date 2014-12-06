@@ -13,6 +13,6 @@
     android:padding="6dip"
     android:layout_margin="0dp"
 
-    tools:context="ut.beacondisseminationapp.ImageGridFragment"/>
+    tools:context="ut.disseminate.ImageGridFragment"/>
 
     <!--android:background="#5677fc"-->

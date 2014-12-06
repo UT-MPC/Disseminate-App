@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:id="@+id/button_table"
-    tools:context="ut.beacondisseminationapp.DownloadButtonsFragment">
+    tools:context="ut.disseminate.DownloadButtonsFragment">
     <!--<View
         android:layout_width="match_parent"
         android:layout_height="1dip"

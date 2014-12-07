@@ -9,7 +9,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 19
         versionCode 1
-        versionName "1.0"
+        versionName "0.1"
     }
     buildTypes {
         release {
@@ -17,10 +17,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+
+
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
     compile 'com.beardedhen:androidbootstrap:1.0.0'
+}
+
+android.applicationVariants.all { variant ->
+    def apk = variant.outputs[0].outputFile;
+    def newName;
+
+    newName = apk.name.replace(project.name, "ut-disseminate" + "-v" + android.defaultConfig.versionName);
+    //newName = replace("-" + variant.buildType.name, "");
+    //newName = newName.replace(".apk", "-" + android.defaultConfig.versionName + ".apk");
+
+    variant.outputs[0].outputFile = new File(apk.parentFile, newName);
+    if (variant.outputs[0].zipAlign) {
+        variant.outputs[0].zipAlign.outputFile = new File(apk.parentFile, newName.replace("-unaligned", ""));
+    }
 }
